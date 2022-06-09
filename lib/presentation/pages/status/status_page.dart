@@ -51,7 +51,7 @@ class StatusPage extends StatelessWidget {
           },
           itemCount: 7,
           itemBuilder: (context, index) {
-            return ListTile(
+            return const ListTile(
               contentPadding:
                   EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               leading: CircleAvatar(),

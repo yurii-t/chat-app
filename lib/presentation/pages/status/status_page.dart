@@ -1,3 +1,5 @@
+import 'package:auto_route/auto_route.dart';
+import 'package:chat_app/routes/app_router.gr.dart';
 import 'package:flutter/material.dart';
 
 class StatusPage extends StatelessWidget {
@@ -30,6 +32,7 @@ class StatusPage extends StatelessWidget {
                 style: TextStyle(color: Colors.transparent),
               ),
               GestureDetector(
+                onTap: () => context.router.push(const MyProfileRoute()),
                 child: const Text(
                   'My profile',
                   style: TextStyle(

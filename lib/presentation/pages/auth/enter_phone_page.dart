@@ -144,6 +144,9 @@ class _EnterPhonePageState extends State<EnterPhonePage> {
                     ),
                   ),
                 ),
+                ElevatedButton(
+                    onPressed: () => context.router.replace(const HomeRoute()),
+                    child: const Text('Skip')),
                 const SizedBox(
                   height: 80,
                 ),

@@ -39,19 +39,83 @@ class MessageBubble extends StatelessWidget {
                 maxBubbleWidth,
                 Colors.transparent,
               )
-            : Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  buildMessageBubble(
-                    maxBubbleWidth,
-                    Colors.red,
-                  ),
-                  const SizedBox(
-                    height: 5,
-                  ),
-                  SvgPicture.asset('assets/icons/error.svg'),
-                ],
+            : GestureDetector(
+                onTap: () {
+                  showModalBottomSheet<Widget?>(
+                    useRootNavigator: true,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(24),
+                      ),
+                    ),
+                    context: context,
+                    builder: (context) {
+                      return Padding(
+                        padding: const EdgeInsets.only(
+                          left: 16,
+                          // right: 16,
+                          top: 35,
+                          bottom: 50,
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                SvgPicture.asset('assets/icons/resend.svg'),
+                                const SizedBox(
+                                  width: 10,
+                                ),
+                                const Text(
+                                  'Resend',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 26,
+                            ),
+                            Row(
+                              children: [
+                                SvgPicture.asset('assets/icons/delete.svg'),
+                                const SizedBox(
+                                  width: 12,
+                                ),
+                                const Text(
+                                  'Delete',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    buildMessageBubble(
+                      maxBubbleWidth,
+                      Colors.red,
+                    ),
+                    const SizedBox(
+                      height: 5,
+                    ),
+                    SvgPicture.asset('assets/icons/error.svg'),
+                  ],
+                ),
               ),
       );
     });

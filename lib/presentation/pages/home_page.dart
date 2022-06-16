@@ -19,40 +19,63 @@ class HomePage extends StatelessWidget {
       ],
       backgroundColor: AppColors.white,
       bottomNavigationBuilder: (_, tabsRouter) {
-        return BottomNavigationBar(
-          currentIndex: tabsRouter.activeIndex,
-          onTap: tabsRouter.setActiveIndex,
-          selectedItemColor: AppColors.green,
-          items: [
-            BottomNavigationBarItem(
-              label: '',
-              icon: SvgPicture.asset(
-                'assets/icons/status.svg',
-                // color: Colors.red,
+        return SizedBox(
+          height: 90,
+          child: BottomNavigationBar(
+            showSelectedLabels: false,
+            showUnselectedLabels: false,
+            type: BottomNavigationBarType.fixed,
+            elevation: 0,
+            currentIndex: tabsRouter.activeIndex,
+            onTap: tabsRouter.setActiveIndex,
+            selectedItemColor: AppColors.green,
+            items: [
+              BottomNavigationBarItem(
+                label: '',
+                icon: SvgPicture.asset(
+                  'assets/icons/status.svg',
+                  // color: Colors.red,
+                ),
+                activeIcon: SvgPicture.asset(
+                  'assets/icons/status.svg',
+                  color: AppColors.green,
+                ),
               ),
-            ),
-            BottomNavigationBarItem(
-              label: '',
-              icon: SvgPicture.asset(
-                'assets/icons/call.svg',
-                // color: Colors.red,
+              BottomNavigationBarItem(
+                label: '',
+                // icon: Icon(Icons.ac_unit_sharp),
+                icon: SvgPicture.asset(
+                  'assets/icons/call.svg',
+                ),
+                activeIcon: SvgPicture.asset(
+                  'assets/icons/call.svg',
+                  color: AppColors.green,
+                ),
               ),
-            ),
-            BottomNavigationBarItem(
-              label: '',
-              icon: SvgPicture.asset(
-                'assets/icons/chats.svg',
-                // color: Colors.red,
+              BottomNavigationBarItem(
+                label: '',
+                icon: SvgPicture.asset(
+                  'assets/icons/chats.svg',
+                  // color: Colors.red,
+                ),
+                activeIcon: SvgPicture.asset(
+                  'assets/icons/chats.svg',
+                  color: AppColors.green,
+                ),
               ),
-            ),
-            BottomNavigationBarItem(
-              label: '',
-              icon: SvgPicture.asset(
-                'assets/icons/setting.svg',
-                // color: BottomNavigationBar ? Colors.red : Colors.amber,
+              BottomNavigationBarItem(
+                label: '',
+                icon: SvgPicture.asset(
+                  'assets/icons/setting.svg',
+                  // color: BottomNavigationBar ? Colors.red : Colors.amber,
+                ),
+                activeIcon: SvgPicture.asset(
+                  'assets/icons/setting.svg',
+                  color: AppColors.green,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         );
       },
     );

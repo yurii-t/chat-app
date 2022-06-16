@@ -121,6 +121,7 @@ class MessagePage extends StatelessWidget {
               ],
             ),
             child: ListTile(
+              onTap: () => context.router.push(ChatRoute()),
               contentPadding:
                   const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               leading: const CircleAvatar(

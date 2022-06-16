@@ -1,11 +1,51 @@
+import 'dart:io';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:chat_app/presentation/widgets/custom_appbar.dart';
 import 'package:chat_app/theme/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:image_picker/image_picker.dart';
 
-class MyProfilePage extends StatelessWidget {
+class MyProfilePage extends StatefulWidget {
   const MyProfilePage({Key? key}) : super(key: key);
+
+  @override
+  State<MyProfilePage> createState() => _MyProfilePageState();
+}
+
+class _MyProfilePageState extends State<MyProfilePage> {
+  final ImagePicker _picker = ImagePicker();
+  File? image;
+
+  Future pickImage() async {
+    try {
+      final image = await _picker.pickImage(source: ImageSource.gallery);
+
+      if (image == null) return;
+
+      final imageTemp = File(image.path);
+
+      setState(() => this.image = imageTemp);
+    } on PlatformException catch (e) {
+      print('Failed to pick image: $e');
+    }
+  }
+
+  Future takePhoto() async {
+    try {
+      final image = await ImagePicker().pickImage(source: ImageSource.camera);
+
+      if (image == null) return;
+
+      final imageTemp = File(image.path);
+
+      setState(() => this.image = imageTemp);
+    } on PlatformException catch (e) {
+      print('Failed to pick image: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -154,40 +194,51 @@ class MyProfilePage extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            children: [
-                              SvgPicture.asset('assets/icons/camera.svg'),
-                              const SizedBox(
-                                width: 10,
-                              ),
-                              const Text(
-                                'Take a Photo',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w400,
+                          GestureDetector(
+                            onTap: () {
+                              takePhoto();
+                            },
+                            child: Row(
+                              children: [
+                                SvgPicture.asset('assets/icons/camera.svg'),
+                                const SizedBox(
+                                  width: 10,
                                 ),
-                              ),
-                            ],
+                                const Text(
+                                  'Take a Photo',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                           const SizedBox(
                             height: 16,
                           ),
-                          Row(
-                            children: [
-                              SvgPicture.asset('assets/icons/library.svg'),
-                              const SizedBox(
-                                width: 10,
-                              ),
-                              const Text(
-                                'Choose from Library',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w400,
+                          GestureDetector(
+                            onTap: () {
+                              pickImage();
+                              print('tap');
+                            },
+                            child: Row(
+                              children: [
+                                SvgPicture.asset('assets/icons/library.svg'),
+                                const SizedBox(
+                                  width: 10,
                                 ),
-                              ),
-                            ],
+                                const Text(
+                                  'Choose from Library',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
@@ -198,6 +249,9 @@ class MyProfilePage extends StatelessWidget {
               child: CircleAvatar(
                 radius: 45,
                 backgroundColor: AppColors.lightGrey,
+                backgroundImage: image != null
+                    ? Image.file(image!).image
+                    : Image.asset('assets/background.png').image,
                 child: SvgPicture.asset('assets/icons/camera.svg'),
               ),
             ),

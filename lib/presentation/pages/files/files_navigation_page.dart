@@ -18,6 +18,7 @@ class FilesNavigationPage extends StatelessWidget {
         return Scaffold(
           backgroundColor: AppColors.white,
           appBar: AppBar(
+            automaticallyImplyLeading: false,
             elevation: 0,
             backgroundColor: AppColors.white,
             title: Row(

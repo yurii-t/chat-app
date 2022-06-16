@@ -54,11 +54,12 @@ class StatusPage extends StatelessWidget {
           },
           itemCount: 7,
           itemBuilder: (context, index) {
-            return const ListTile(
+            return ListTile(
+              onTap: () => context.router.push(ChatRoute()),
               contentPadding:
-                  EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-              leading: CircleAvatar(),
-              title: Text('User Name'),
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              leading: const CircleAvatar(),
+              title: const Text('User Name'),
             );
           },
         ),

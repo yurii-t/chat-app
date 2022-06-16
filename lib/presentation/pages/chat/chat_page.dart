@@ -1,5 +1,7 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:chat_app/presentation/pages/chat/widgets/message_bubble.dart';
 import 'package:chat_app/presentation/widgets/custom_appbar.dart';
+import 'package:chat_app/routes/app_router.gr.dart';
 import 'package:chat_app/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -35,32 +37,40 @@ class _ChatPageState extends State<ChatPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(
-        widgetleft: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SvgPicture.asset('assets/icons/chevron_left.svg'),
-            const SizedBox(
-              width: 10,
-            ),
-            const Text(
-              'Message',
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 14,
-                fontWeight: FontWeight.w400,
+        widgetleft: GestureDetector(
+          onTap: () => context.router.pop(),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SvgPicture.asset('assets/icons/chevron_left.svg'),
+              const SizedBox(
+                width: 10,
               ),
-            ),
-          ],
-        ),
-        widgetCenter: const Text(
-          'Marren Margo',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w400,
-            color: Colors.black,
+              const Text(
+                'Message',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ],
           ),
         ),
-        widgetRight: SvgPicture.asset('assets/icons/media.svg'),
+        widgetCenter: GestureDetector(
+          onTap: () => context.router.push(ProfileRoute()),
+          child: const Text(
+            'Marren Margo',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w400,
+              color: Colors.black,
+            ),
+          ),
+        ),
+        widgetRight: GestureDetector(
+            onTap: () => context.router.push(ProfileRoute()),
+            child: SvgPicture.asset('assets/icons/media.svg')),
       ),
       body: Padding(
         padding: const EdgeInsets.only(left: 16, right: 16, bottom: 30),

@@ -25,7 +25,8 @@ class _EnterPinPageState extends State<EnterPinPage> {
       body: BlocListener<PhoneAuthBloc, PhoneAuthState>(
         listener: (context, state) {
           if (state is PhoneAuthVerified) {
-            context.router.replace(const HomeRoute());
+            // context.router.replace(const HomeRoute());
+            context.router.replaceAll([HomeRoute(), MyProfileRoute()]);
           }
 
           if (state is PhoneAuthError) {

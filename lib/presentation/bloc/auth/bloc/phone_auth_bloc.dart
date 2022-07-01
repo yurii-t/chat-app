@@ -54,7 +54,7 @@ class PhoneAuthBloc extends Bloc<PhoneAuthEvent, PhoneAuthState> {
       //   },
       //   codeAutoRetrievalTimeout: (verificationId) {},
       // );
-      await verifyPhoneUseCase.call(verifyPhoneParams(
+      await verifyPhoneUseCase.call(VerifyPhoneParams(
         phoneNumber: event.phoneNumber,
         verificationCompleted: (credential) async {
           add(OnPhoneAuthVerificationCompleteEvent(credential: credential));
@@ -106,7 +106,7 @@ class PhoneAuthBloc extends Bloc<PhoneAuthEvent, PhoneAuthState> {
       // });
       await signinWithCredentialUseCase.call(event.credential).then((user) {
         if (user.user != null) {
-          emit(PhoneAuthVerified());
+          emit(PhoneAuthVerified(user.user!.uid));
         }
       });
     } on FirebaseAuthException catch (e) {

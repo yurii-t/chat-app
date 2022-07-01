@@ -18,7 +18,11 @@ import 'package:chat_app/presentation/pages/status/status_page.dart';
 @MaterialAutoRouter(
   replaceInRouteName: 'Page,Route',
   routes: <AutoRoute>[
-    AutoRoute<void>(page: EnterPhonePage, initial: true),
+    AutoRoute<void>(
+      // guards: [CheckAuthStatus],
+      page: EnterPhonePage,
+      initial: true,
+    ),
     AutoRoute<void>(page: EnterPinPage),
     AutoRoute<void>(page: ChatPage),
     AutoRoute<void>(page: ProfilePage),

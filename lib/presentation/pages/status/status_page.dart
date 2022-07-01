@@ -1,13 +1,20 @@
 import 'dart:math';
 
 import 'package:auto_route/auto_route.dart';
+import 'package:chat_app/domain/entities/user_entity.dart';
+import 'package:chat_app/presentation/bloc/auth_status/bloc/auth_status_bloc.dart';
+import 'package:chat_app/presentation/bloc/chat/bloc/chat_interaction_bloc.dart';
 import 'package:chat_app/presentation/bloc/user/bloc/user_bloc.dart';
 import 'package:chat_app/routes/app_router.gr.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class StatusPage extends StatelessWidget {
-  const StatusPage({Key? key}) : super(key: key);
+  final UserEntity userInfo;
+  const StatusPage({
+    required this.userInfo,
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -22,6 +29,8 @@ class StatusPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               GestureDetector(
+                onTap: () =>
+                    context.read<AuthStatusBloc>().add(AuthStatusLogedOut()),
                 child: const Text(
                   'Log out',
                   style: TextStyle(
@@ -73,8 +82,25 @@ class StatusPage extends StatelessWidget {
                 },
                 itemCount: state.allUsers.length, //7,
                 itemBuilder: (context, index) {
+                  final userData = state.allUsers[index];
+
                   return ListTile(
-                    onTap: () => context.router.push(ChatRoute()),
+                    onTap: () async {
+                      context.read<ChatInteractionBloc>().add(
+                            ChatInteractionsCreateChat(
+                              userInfo.userId,
+                              userData.userId,
+                            ),
+                          );
+                      await context.router.push(ChatRoute(
+                        senderUid: userInfo.userId,
+                        senderName: userInfo.userName,
+                        senderPhoneNumber: userInfo.userPhone,
+                        recipientUid: userData.userId,
+                        recipientName: userData.userName,
+                        recipientPhoneNumber: userData.userPhone,
+                      ));
+                    },
                     contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 16),
                     leading: CircleAvatar(

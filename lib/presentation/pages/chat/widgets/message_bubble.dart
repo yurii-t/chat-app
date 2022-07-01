@@ -14,6 +14,10 @@ class MessageBubble extends StatelessWidget {
     this.seen,
     this.downloaded,
     this.error = false,
+    this.docSize,
+    this.downloading,
+    this.downloadValue,
+    this.downloadString,
     Key? key,
   }) : super(key: key);
   final MessageBubbleType type;
@@ -22,6 +26,10 @@ class MessageBubble extends StatelessWidget {
   final bool? seen;
   final bool? downloaded;
   final bool error;
+  final String? docSize;
+  final bool? downloading;
+  final num? downloadValue;
+  final String? downloadString;
 
   @override
   Widget build(BuildContext context) {
@@ -131,7 +139,7 @@ class MessageBubble extends StatelessWidget {
         {
           return MessageContainer(
             text: text,
-            time: '12:00',
+            time: time,
             maxWidth: maxWidth,
             color: AppColors.green,
             messageColor: AppColors.white,
@@ -145,7 +153,7 @@ class MessageBubble extends StatelessWidget {
         {
           return MessageContainer(
             text: text,
-            time: '12:00',
+            time: time,
             maxWidth: maxWidth,
             color: AppColors.lightGrey,
             messageColor: Colors.black,
@@ -160,6 +168,7 @@ class MessageBubble extends StatelessWidget {
       case MessageBubbleType.sendImage:
         {
           return ImageCotainer(
+            imageUrl: text,
             color: AppColors.green,
             border: BorderRadius.circular(16),
             errorBorder: errorBorder,
@@ -168,9 +177,10 @@ class MessageBubble extends StatelessWidget {
 
       case MessageBubbleType.reciveImage:
         {
-          return const ImageCotainer(
+          return ImageCotainer(
+            imageUrl: text,
             color: AppColors.lightGrey,
-            border: BorderRadius.only(
+            border: const BorderRadius.only(
               topLeft: Radius.circular(19),
               topRight: Radius.circular(19),
               bottomRight: Radius.circular(19),
@@ -181,6 +191,8 @@ class MessageBubble extends StatelessWidget {
       case MessageBubbleType.sendDoc:
         {
           return DocContainer(
+            docName: text ?? 'doc',
+            docSize: docSize ?? '',
             color: AppColors.green,
             time: time,
             textColor: AppColors.white,
@@ -193,6 +205,8 @@ class MessageBubble extends StatelessWidget {
       case MessageBubbleType.reciveDoc:
         {
           return DocContainer(
+            docName: text ?? 'doc',
+            docSize: docSize ?? '',
             color: AppColors.lightGrey,
             time: time,
             textColor: Colors.black,
@@ -203,6 +217,9 @@ class MessageBubble extends StatelessWidget {
               bottomRight: Radius.circular(19),
             ),
             downloaded: downloaded,
+            downloading: downloading,
+            downloadValue: downloadValue,
+            downloadString: downloadString,
           );
         }
     }
@@ -216,8 +233,13 @@ class DocContainer extends StatelessWidget {
     required this.textColor,
     required this.subTextColor,
     required this.border,
+    required this.docSize,
+    required this.docName,
     this.downloaded,
     this.errorBorder,
+    this.downloading,
+    this.downloadValue,
+    this.downloadString,
     Key? key,
   }) : super(key: key);
   final Color color;
@@ -227,9 +249,18 @@ class DocContainer extends StatelessWidget {
   final Color subTextColor;
   final bool? downloaded;
   final Color? errorBorder;
+  final bool? downloading;
+  final num? downloadValue;
+  final String? downloadString;
+  final String docSize;
+  final String docName;
 
   @override
   Widget build(BuildContext context) {
+    final isDownloaded = downloaded == true
+        ? SvgPicture.asset('assets/icons/open_doc.svg')
+        : SvgPicture.asset('assets/icons/download_doc.svg');
+
     return Container(
       constraints:
           BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.7),
@@ -241,11 +272,16 @@ class DocContainer extends StatelessWidget {
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-        leading: downloaded == true
-            ? SvgPicture.asset('assets/icons/open_doc.svg')
-            : SvgPicture.asset('assets/icons/download_doc.svg'),
+        leading: downloading == true
+            ? CircularProgressIndicator(
+                value: downloadValue?.toDouble(),
+              )
+            : isDownloaded,
+        // downloaded == true
+        //     ? SvgPicture.asset('assets/icons/open_doc.svg')
+        //     : SvgPicture.asset('assets/icons/download_doc.svg'),
         title: Text(
-          'Document Name.doc',
+          docName,
           style: TextStyle(
             fontSize: 15,
             color: textColor,
@@ -256,7 +292,7 @@ class DocContainer extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                '12 Kb',
+                downloading != true ? docSize : downloadString ?? '',
                 style: TextStyle(
                   fontSize: 12,
                   color: subTextColor,
@@ -283,28 +319,70 @@ class ImageCotainer extends StatelessWidget {
   final Color color;
   final BorderRadius border;
   final Color? errorBorder;
+  final String? imageUrl;
 
   const ImageCotainer({
     required this.color,
     required this.border,
     this.errorBorder,
+    this.imageUrl,
     Key? key,
   }) : super(key: key);
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
-      child: SizedBox(
+      child: Container(
+        clipBehavior: Clip.antiAliasWithSaveLayer,
         width: MediaQuery.of(context).size.width * 0.8,
         height: MediaQuery.of(context).size.height * 0.3,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: border,
-            border: Border.all(color: errorBorder ?? Colors.transparent),
-            // image:
-          ),
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: border,
+          border: Border.all(color: errorBorder ?? Colors.transparent),
+          // image: DecorationImage(
+          //   image:  NetworkImage(imageUrl ?? ''),
+          //   fit: BoxFit.cover,
+          // ),
         ),
+        child: Image.network(
+          imageUrl ?? '',
+          loadingBuilder: (context, child, loadingProgress) {
+            int? expSize;
+            int? dowSize;
+            expSize = loadingProgress?.expectedTotalBytes;
+            dowSize = loadingProgress?.cumulativeBytesLoaded;
+
+            return expSize != null && dowSize != null
+                ? Center(
+                    child: CircularProgressIndicator(
+                      value: dowSize / expSize,
+                      color: Colors.white,
+                    ),
+                  )
+                : child;
+          },
+          fit: BoxFit.fill,
+        ),
+        // child:
+        // DecoratedBox(
+        //   decoration: BoxDecoration(
+        //     color: color,
+        //     borderRadius: border,
+        //     border: Border.all(color: errorBorder ?? Colors.transparent),
+        //     image: DecorationImage(
+        //       image: NetworkImage(imageUrl ?? ''),
+        //       fit: BoxFit.cover,
+        //     ),
+        //   ),
+        //   child: imageUrl == null
+        //       ? const CircularProgressIndicator(
+        //           // value: ,
+        //           color: Colors.white,
+        //         )
+        //       : null,
+        //   // : Image.network(imageUrl ?? ''),
+        // ),
       ),
     );
   }

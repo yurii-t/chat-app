@@ -1,5 +1,9 @@
 import 'package:chat_app/data/datasource/firebase/firebase_remote_datasource.dart';
+import 'package:chat_app/data/models/chat_model.dart';
+import 'package:chat_app/data/models/message_model.dart';
 import 'package:chat_app/data/models/user_model.dart';
+import 'package:chat_app/domain/entities/chat_entity.dart';
+import 'package:chat_app/domain/entities/message_entity.dart';
 import 'package:chat_app/domain/entities/user_entity.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -8,6 +12,12 @@ class FirebaseRemoteDataSourceImpl implements FirebaseRemoteDataSource {
   FirebaseAuth auth = FirebaseAuth.instance;
   final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
 
+  @override
+  Future<String> getCurrentUserUid() async => await auth.currentUser?.uid ?? '';
+  @override
+  Future<bool> isSignIn() async => await auth.currentUser?.uid != null;
+  @override
+  Future<void> signOut() async => auth.signOut();
   @override
   Future<void> verifyPhone({
     required String phoneNumber,
@@ -63,7 +73,7 @@ class FirebaseRemoteDataSourceImpl implements FirebaseRemoteDataSource {
 
     return _firebaseFirestore
         .collection('users')
-        .where('userId', isNotEqualTo: currentUid)
+        // .where('userId', isNotEqualTo: currentUid)
         .snapshots()
         .map((snapshot) {
       return snapshot.docs.map(UserModel.fromSnapShot).toList();
@@ -76,5 +86,170 @@ class FirebaseRemoteDataSourceImpl implements FirebaseRemoteDataSource {
     final String? uid = await auth.currentUser?.uid;
 
     return userCollection.doc(uid).get().then(UserModel.fromSnapShot);
+  }
+
+  @override
+  Future<void> createChat(String uid, String otherUid) async {
+    //otherUid == chatId???
+    final userCollectionRef = _firebaseFirestore.collection('users');
+    final chatCollectionRef = _firebaseFirestore.collection('chats');
+
+    await userCollectionRef
+        .doc(uid)
+        .collection('activeChats')
+        .doc(otherUid)
+        .get()
+        .then((chatDoc) {
+      if (chatDoc.exists) {
+        return;
+      }
+      final String _chatId = chatCollectionRef.doc().id;
+      final Map<String, Object> _chatIdMap = {'chatId': _chatId};
+      chatCollectionRef.doc(_chatId).set(_chatIdMap);
+
+      userCollectionRef
+          .doc(uid)
+          .collection('activeChats')
+          .doc(otherUid)
+          .set(_chatIdMap);
+
+      userCollectionRef
+          .doc(otherUid)
+          .collection('activeChats')
+          .doc(uid)
+          .set(_chatIdMap);
+// TODO(yura):check return,
+      return;
+    });
+  }
+
+  @override
+  Future<void> sendMessage(MessageEntity messageEntity, String chatId) async {
+    final messageCollectionRef = _firebaseFirestore
+        .collection('chats')
+        .doc(chatId)
+        .collection('messages');
+
+    final String _messageId = messageCollectionRef.doc().id;
+    final newMessage = MessageModel(
+      senderName: messageEntity.senderName,
+      sederUid: messageEntity.sederUid,
+      recipientName: messageEntity.recipientName,
+      recipientUid: messageEntity.recipientUid,
+      messageType: messageEntity.messageType,
+      message: messageEntity.message,
+      messageId: _messageId,
+      time: messageEntity.time,
+      docSize: messageEntity.docSize,
+      docName: messageEntity.docName,
+    ).toDocument();
+    await messageCollectionRef.doc(_messageId).set(newMessage);
+  }
+
+  @override
+  // ignore: long-method
+  Future<void> addActiveChatDetails(ChatEntity chatEntity) async {
+    final myChatDetailsCollectionRef = _firebaseFirestore
+        .collection('users')
+        .doc(chatEntity.senderUid)
+        .collection('myChat');
+
+    final otherChatDetailsCollectionRef = _firebaseFirestore
+        .collection('users')
+        .doc(chatEntity.recepientUid)
+        .collection('myChat');
+
+    final myNewChat = ChatModel(
+      chatId: chatEntity.chatId,
+      senderName: chatEntity.senderName,
+      senderUid: chatEntity.senderUid,
+      senderPhoneNumber: chatEntity.senderPhoneNumber,
+      recepientName: chatEntity.recepientName,
+      recepientUid: chatEntity.recepientUid,
+      recepientPhoneNumber: chatEntity.recepientPhoneNumber,
+      recentTextMessage: chatEntity.recentTextMessage,
+      isRead: chatEntity.isRead,
+      time: chatEntity.time,
+    ).toDocument();
+
+    final otherNewChat = ChatModel(
+      chatId: chatEntity.chatId,
+      senderName: chatEntity.recepientName,
+      senderUid: chatEntity.recepientUid,
+      senderPhoneNumber: chatEntity.recepientPhoneNumber,
+      recepientName: chatEntity.senderName,
+      recepientUid: chatEntity.senderUid,
+      recepientPhoneNumber: chatEntity.senderPhoneNumber,
+      recentTextMessage: chatEntity.recentTextMessage,
+      isRead: chatEntity.isRead,
+      time: chatEntity.time,
+    ).toDocument();
+
+    await myChatDetailsCollectionRef
+        .doc(chatEntity.recepientUid)
+        .get()
+        .then((myChatDoc) {
+      if (!myChatDoc.exists) {
+        myChatDetailsCollectionRef.doc(chatEntity.recepientUid).set(myNewChat);
+        otherChatDetailsCollectionRef
+            .doc(chatEntity.senderUid)
+            .set(otherNewChat);
+
+        return;
+      } else {
+        myChatDetailsCollectionRef
+            .doc(chatEntity.recepientUid)
+            .update(myNewChat);
+        otherChatDetailsCollectionRef
+            .doc(chatEntity.senderUid)
+            .update(otherNewChat);
+
+        return;
+      }
+    });
+  }
+
+  @override
+  Stream<List<MessageEntity>> getMessages(String chatId) {
+    final messageCollectionRef = _firebaseFirestore
+        .collection('chats')
+        .doc(chatId)
+        .collection('messages');
+
+    return messageCollectionRef.orderBy('time').snapshots().map((snapshot) {
+      return snapshot.docs.map(MessageModel.fromSnapShot).toList();
+    });
+  }
+
+  @override
+  Stream<List<ChatEntity>> getActiveChats() {
+    final String? uid = auth.currentUser?.uid;
+    final chatCollectionRef =
+        _firebaseFirestore.collection('users').doc(uid).collection('myChat');
+
+    return chatCollectionRef
+        .orderBy('time', descending: true)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map(ChatModel.fromSnapShot).toList();
+    });
+  }
+
+  @override
+  Future<String> getChatId(String uid, String otherUid) async {
+    final userCollectionRef = _firebaseFirestore.collection('users');
+
+    return userCollectionRef
+        .doc(uid)
+        .collection('activeChats')
+        .doc(otherUid)
+        .get()
+        .then((chatId) {
+      if (chatId.exists) {
+        return chatId.data()!['chatId'] as String;
+      }
+
+      return Future.value('nema id');
+    });
   }
 }

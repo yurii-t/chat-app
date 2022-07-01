@@ -8,4 +8,5 @@ class AppColors {
   static const Color grey = Color(0xFFB5B5B5);
   static const Color numberPhoneTextGrey = Color(0xFF808080);
   static const Color lightGreytextFieldSearchHintText = Color(0xFFBEBEBE);
+  static const Color unselectedIcon = Color(0xFFC6C6C6);
 }

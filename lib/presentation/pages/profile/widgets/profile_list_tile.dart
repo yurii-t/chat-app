@@ -7,15 +7,18 @@ class ProfileListTile extends StatelessWidget {
     required this.image,
     required this.title,
     required this.textTrailing,
+    this.tap,
     Key? key,
   }) : super(key: key);
   final Widget image;
   final String title;
   final String textTrailing;
+  final VoidCallback? tap;
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
+      onTap: tap,
       contentPadding: EdgeInsets.zero,
       leading: image,
       title: Row(

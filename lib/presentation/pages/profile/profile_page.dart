@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:chat_app/presentation/pages/profile/widgets/profile_list_tile.dart';
+import 'package:chat_app/routes/app_router.gr.dart';
 import 'package:chat_app/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -141,6 +142,7 @@ class ProfilePage extends StatelessWidget {
                     height: 10,
                   ),
                   ProfileListTile(
+                    tap: () => context.router.push(FilesNavigationRoute()),
                     image: SvgPicture.asset('assets/icons/media.svg'),
                     title: 'Media, Links and Docs',
                     textTrailing: '130',

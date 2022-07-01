@@ -20,7 +20,13 @@ class PhoneAuthError extends PhoneAuthState {
   List<Object> get props => [error];
 }
 
-class PhoneAuthVerified extends PhoneAuthState {}
+class PhoneAuthVerified extends PhoneAuthState {
+  final String uid;
+
+  const PhoneAuthVerified(this.uid);
+  @override
+  List<Object> get props => [uid];
+}
 
 class PhoneAuthCodeSentSuccess extends PhoneAuthState {
   final String verificationId;

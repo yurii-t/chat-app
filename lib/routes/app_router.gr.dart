@@ -13,6 +13,7 @@
 import 'package:auto_route/auto_route.dart' as _i15;
 import 'package:flutter/material.dart' as _i16;
 
+import '../domain/entities/user_entity.dart' as _i17;
 import '../presentation/pages/auth/enter_phone_page.dart' as _i1;
 import '../presentation/pages/auth/enter_pin_page.dart' as _i2;
 import '../presentation/pages/call/call_page.dart' as _i12;
@@ -45,8 +46,17 @@ class AppRouter extends _i15.RootStackRouter {
           child: _i2.EnterPinPage(verId: args.verId, key: args.key));
     },
     ChatRoute.name: (routeData) {
+      final args = routeData.argsAs<ChatRouteArgs>();
       return _i15.MaterialPageX<void>(
-          routeData: routeData, child: const _i3.ChatPage());
+          routeData: routeData,
+          child: _i3.ChatPage(
+              senderUid: args.senderUid,
+              recipientUid: args.recipientUid,
+              senderName: args.senderName,
+              recipientName: args.recipientName,
+              recipientPhoneNumber: args.recipientPhoneNumber,
+              senderPhoneNumber: args.senderPhoneNumber,
+              key: args.key));
     },
     ProfileRoute.name: (routeData) {
       return _i15.MaterialPageX<void>(
@@ -65,8 +75,10 @@ class AppRouter extends _i15.RootStackRouter {
           routeData: routeData, child: const _i7.FilesNavigationPage());
     },
     HomeRoute.name: (routeData) {
+      final args = routeData.argsAs<HomeRouteArgs>();
       return _i15.MaterialPageX<void>(
-          routeData: routeData, child: const _i8.HomePage());
+          routeData: routeData,
+          child: _i8.HomePage(userId: args.userId, key: args.key));
     },
     MediaRoute.name: (routeData) {
       return _i15.MaterialPageX<void>(
@@ -77,16 +89,20 @@ class AppRouter extends _i15.RootStackRouter {
           routeData: routeData, child: const _i10.FilesPage());
     },
     StatusRoute.name: (routeData) {
+      final args = routeData.argsAs<StatusRouteArgs>();
       return _i15.MaterialPageX<void>(
-          routeData: routeData, child: const _i11.StatusPage());
+          routeData: routeData,
+          child: _i11.StatusPage(userInfo: args.userInfo, key: args.key));
     },
     CallRoute.name: (routeData) {
       return _i15.MaterialPageX<void>(
           routeData: routeData, child: const _i12.CallPage());
     },
     MessageRoute.name: (routeData) {
+      final args = routeData.argsAs<MessageRouteArgs>();
       return _i15.MaterialPageX<void>(
-          routeData: routeData, child: const _i13.MessagePage());
+          routeData: routeData,
+          child: _i13.MessagePage(userInfo: args.userInfo, key: args.key));
     },
     SettingRoute.name: (routeData) {
       return _i15.MaterialPageX<void>(
@@ -157,10 +173,57 @@ class EnterPinRouteArgs {
 
 /// generated route for
 /// [_i3.ChatPage]
-class ChatRoute extends _i15.PageRouteInfo<void> {
-  const ChatRoute() : super(ChatRoute.name, path: '/chat-page');
+class ChatRoute extends _i15.PageRouteInfo<ChatRouteArgs> {
+  ChatRoute(
+      {required String senderUid,
+      required String recipientUid,
+      required String senderName,
+      required String recipientName,
+      required String recipientPhoneNumber,
+      required String senderPhoneNumber,
+      _i16.Key? key})
+      : super(ChatRoute.name,
+            path: '/chat-page',
+            args: ChatRouteArgs(
+                senderUid: senderUid,
+                recipientUid: recipientUid,
+                senderName: senderName,
+                recipientName: recipientName,
+                recipientPhoneNumber: recipientPhoneNumber,
+                senderPhoneNumber: senderPhoneNumber,
+                key: key));
 
   static const String name = 'ChatRoute';
+}
+
+class ChatRouteArgs {
+  const ChatRouteArgs(
+      {required this.senderUid,
+      required this.recipientUid,
+      required this.senderName,
+      required this.recipientName,
+      required this.recipientPhoneNumber,
+      required this.senderPhoneNumber,
+      this.key});
+
+  final String senderUid;
+
+  final String recipientUid;
+
+  final String senderName;
+
+  final String recipientName;
+
+  final String recipientPhoneNumber;
+
+  final String senderPhoneNumber;
+
+  final _i16.Key? key;
+
+  @override
+  String toString() {
+    return 'ChatRouteArgs{senderUid: $senderUid, recipientUid: $recipientUid, senderName: $senderName, recipientName: $recipientName, recipientPhoneNumber: $recipientPhoneNumber, senderPhoneNumber: $senderPhoneNumber, key: $key}';
+  }
 }
 
 /// generated route for
@@ -199,11 +262,30 @@ class FilesNavigationRoute extends _i15.PageRouteInfo<void> {
 
 /// generated route for
 /// [_i8.HomePage]
-class HomeRoute extends _i15.PageRouteInfo<void> {
-  const HomeRoute({List<_i15.PageRouteInfo>? children})
-      : super(HomeRoute.name, path: '/home-page', initialChildren: children);
+class HomeRoute extends _i15.PageRouteInfo<HomeRouteArgs> {
+  HomeRoute(
+      {required String userId,
+      _i16.Key? key,
+      List<_i15.PageRouteInfo>? children})
+      : super(HomeRoute.name,
+            path: '/home-page',
+            args: HomeRouteArgs(userId: userId, key: key),
+            initialChildren: children);
 
   static const String name = 'HomeRoute';
+}
+
+class HomeRouteArgs {
+  const HomeRouteArgs({required this.userId, this.key});
+
+  final String userId;
+
+  final _i16.Key? key;
+
+  @override
+  String toString() {
+    return 'HomeRouteArgs{userId: $userId, key: $key}';
+  }
 }
 
 /// generated route for
@@ -224,10 +306,26 @@ class FilesRoute extends _i15.PageRouteInfo<void> {
 
 /// generated route for
 /// [_i11.StatusPage]
-class StatusRoute extends _i15.PageRouteInfo<void> {
-  const StatusRoute() : super(StatusRoute.name, path: 'status-page');
+class StatusRoute extends _i15.PageRouteInfo<StatusRouteArgs> {
+  StatusRoute({required _i17.UserEntity userInfo, _i16.Key? key})
+      : super(StatusRoute.name,
+            path: 'status-page',
+            args: StatusRouteArgs(userInfo: userInfo, key: key));
 
   static const String name = 'StatusRoute';
+}
+
+class StatusRouteArgs {
+  const StatusRouteArgs({required this.userInfo, this.key});
+
+  final _i17.UserEntity userInfo;
+
+  final _i16.Key? key;
+
+  @override
+  String toString() {
+    return 'StatusRouteArgs{userInfo: $userInfo, key: $key}';
+  }
 }
 
 /// generated route for
@@ -240,10 +338,26 @@ class CallRoute extends _i15.PageRouteInfo<void> {
 
 /// generated route for
 /// [_i13.MessagePage]
-class MessageRoute extends _i15.PageRouteInfo<void> {
-  const MessageRoute() : super(MessageRoute.name, path: 'message-page');
+class MessageRoute extends _i15.PageRouteInfo<MessageRouteArgs> {
+  MessageRoute({required _i17.UserEntity userInfo, _i16.Key? key})
+      : super(MessageRoute.name,
+            path: 'message-page',
+            args: MessageRouteArgs(userInfo: userInfo, key: key));
 
   static const String name = 'MessageRoute';
+}
+
+class MessageRouteArgs {
+  const MessageRouteArgs({required this.userInfo, this.key});
+
+  final _i17.UserEntity userInfo;
+
+  final _i16.Key? key;
+
+  @override
+  String toString() {
+    return 'MessageRouteArgs{userInfo: $userInfo, key: $key}';
+  }
 }
 
 /// generated route for

@@ -1,11 +1,76 @@
+import 'dart:io';
+
 import 'package:auto_route/auto_route.dart';
+import 'package:chat_app/data/models/user_model.dart';
+import 'package:chat_app/domain/entities/user_entity.dart';
+import 'package:chat_app/presentation/bloc/current_user/bloc/current_user_bloc.dart';
+// import 'package:chat_app/presentation/bloc/user/bloc/user_bloc.dart';
 import 'package:chat_app/presentation/widgets/custom_appbar.dart';
 import 'package:chat_app/theme/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:chat_app/core/dependency_injection.dart' as di;
+import 'package:image_picker/image_picker.dart';
 
-class MyProfilePage extends StatelessWidget {
-  const MyProfilePage({Key? key}) : super(key: key);
+class MyProfilePage extends StatefulWidget {
+  const MyProfilePage({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  State<MyProfilePage> createState() => _MyProfilePageState();
+}
+
+class _MyProfilePageState extends State<MyProfilePage> {
+  final firstNameController = TextEditingController();
+  final lastNameController = TextEditingController();
+  final adressController = TextEditingController();
+  final genderController = TextEditingController();
+  final martialController = TextEditingController();
+  final languageController = TextEditingController();
+  final ImagePicker _picker = ImagePicker();
+  UserModel? userId;
+  File? image;
+
+  Future pickImage() async {
+    try {
+      final image = await _picker.pickImage(source: ImageSource.gallery);
+
+      if (image == null) return;
+
+      final imageTemp = File(image.path);
+
+      setState(() => this.image = imageTemp);
+    } on PlatformException catch (e) {
+      print('Failed to pick image: $e');
+    }
+  }
+
+  Future takePhoto() async {
+    try {
+      final image = await ImagePicker().pickImage(source: ImageSource.camera);
+
+      if (image == null) return;
+
+      final imageTemp = File(image.path);
+
+      setState(() => this.image = imageTemp);
+    } on PlatformException catch (e) {
+      print('Failed to pick image: $e');
+    }
+    @override
+    void dispose() {
+      firstNameController.dispose();
+      lastNameController.dispose();
+      adressController.dispose();
+      genderController.dispose();
+      martialController.dispose();
+      languageController.dispose();
+      super.dispose();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +150,17 @@ class MyProfilePage extends StatelessWidget {
                           ),
                           Expanded(
                             child: ElevatedButton(
-                              onPressed: () => context.router.pop(),
+                              onPressed: () {
+                                context.read<CurrentUserBloc>().add(CreateUser(
+                                      '${firstNameController.text} ${lastNameController.text}',
+                                      '', //userImage,
+                                      adressController.text,
+                                      genderController.text,
+                                      martialController.text,
+                                      languageController.text,
+                                    ));
+                                context.router.pop();
+                              },
                               style: ElevatedButton.styleFrom(
                                 fixedSize: const Size(166, 45),
                                 elevation: null,
@@ -125,156 +200,204 @@ class MyProfilePage extends StatelessWidget {
           ),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 15),
-        child: ListView(
-          children: [
-            const SizedBox(
-              height: 32,
-            ),
-            GestureDetector(
-              onTap: () {
-                showModalBottomSheet<Widget?>(
-                  useRootNavigator: true,
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(24),
-                    ),
+      body: BlocBuilder<CurrentUserBloc, CurrentUserState>(
+        builder: (context, state) {
+          if (state is CurrentUserLoading) {
+            return const Center(
+              child: SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(),
+              ),
+            );
+          }
+          if (state is CurrentUserLoaded) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 15),
+              child: ListView(
+                children: [
+                  const SizedBox(
+                    height: 32,
                   ),
-                  context: context,
-                  builder: (context) {
-                    return Padding(
-                      padding: const EdgeInsets.only(
-                        left: 16,
-                        // right: 16,
-                        top: 35,
-                        bottom: 50,
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              SvgPicture.asset('assets/icons/camera.svg'),
-                              const SizedBox(
-                                width: 10,
-                              ),
-                              const Text(
-                                'Take a Photo',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w400,
+                  GestureDetector(
+                    onTap: () {
+                      showModalBottomSheet<Widget?>(
+                        useRootNavigator: true,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(24),
+                          ),
+                        ),
+                        context: context,
+                        builder: (context) {
+                          return Padding(
+                            padding: const EdgeInsets.only(
+                              left: 16,
+                              // right: 16,
+                              top: 35,
+                              bottom: 50,
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                GestureDetector(
+                                  onTap: () {
+                                    takePhoto();
+                                  },
+                                  child: Row(
+                                    children: [
+                                      SvgPicture.asset(
+                                        'assets/icons/camera.svg',
+                                      ),
+                                      const SizedBox(
+                                        width: 10,
+                                      ),
+                                      const Text(
+                                        'Take a Photo',
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w400,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(
-                            height: 16,
-                          ),
-                          Row(
-                            children: [
-                              SvgPicture.asset('assets/icons/library.svg'),
-                              const SizedBox(
-                                width: 10,
-                              ),
-                              const Text(
-                                'Choose from Library',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w400,
+                                const SizedBox(
+                                  height: 16,
                                 ),
-                              ),
-                            ],
+                                GestureDetector(
+                                  onTap: () {
+                                    pickImage();
+                                    print('tap');
+                                  },
+                                  child: Row(
+                                    children: [
+                                      SvgPicture.asset(
+                                          'assets/icons/library.svg'),
+                                      const SizedBox(
+                                        width: 10,
+                                      ),
+                                      const Text(
+                                        'Choose from Library',
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w400,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      );
+                    },
+                    child: CircleAvatar(
+                      radius: 45,
+                      backgroundColor: AppColors.lightGrey,
+                      backgroundImage: image != null
+                          ? Image.file(image!).image
+                          : null, //Image.asset('assets/background.png').image,
+                      child: SvgPicture.asset('assets/icons/camera.svg'),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 32,
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: firstNameController,
+                          decoration: InputDecoration(
+                            hintText: state.usersInfo.userName
+                                .split(' ')
+                                .first, //[1];, //'First Name',
+                            hintStyle: const TextStyle(color: AppColors.grey),
                           ),
-                        ],
+                        ),
                       ),
-                    );
-                  },
-                );
-              },
-              child: CircleAvatar(
-                radius: 45,
-                backgroundColor: AppColors.lightGrey,
-                child: SvgPicture.asset('assets/icons/camera.svg'),
-              ),
-            ),
-            const SizedBox(
-              height: 32,
-            ),
-            Row(
-              children: const [
-                const Expanded(
-                  child: TextField(
+                      const SizedBox(
+                        width: 15,
+                      ),
+                      Expanded(
+                        child: TextField(
+                          controller: lastNameController,
+                          decoration: InputDecoration(
+                            hintText: state.usersInfo.userName.split(' ').last,
+                            hintStyle: const TextStyle(color: AppColors.grey),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 15,
+                  ),
+                  TextField(
+                    readOnly: true,
                     decoration: InputDecoration(
-                      hintText: 'First Name',
-                      hintStyle: TextStyle(color: AppColors.grey),
+                      hintText: '${state.usersInfo.userPhone}',
+                      hintStyle: const TextStyle(color: AppColors.grey),
                     ),
                   ),
-                ),
-                const SizedBox(
-                  width: 15,
-                ),
-                Expanded(
-                  child: TextField(
+                  const SizedBox(
+                    height: 15,
+                  ),
+                  TextField(
+                    controller: adressController,
                     decoration: InputDecoration(
-                      hintText: 'Last Name',
-                      hintStyle: TextStyle(color: AppColors.grey),
+                      hintText: state.usersInfo.userAddress,
+                      hintStyle: const TextStyle(color: AppColors.grey),
                     ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(
-              height: 15,
-            ),
-            const TextField(
-              readOnly: true,
-              decoration: InputDecoration(
-                hintText: 'Phone',
-                hintStyle: TextStyle(color: AppColors.grey),
+                  const SizedBox(
+                    height: 15,
+                  ),
+                  TextField(
+                    controller: genderController,
+                    decoration: InputDecoration(
+                      hintText: state.usersInfo.userGender,
+                      hintStyle: const TextStyle(color: AppColors.grey),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 15,
+                  ),
+                  TextField(
+                    controller: martialController,
+                    decoration: InputDecoration(
+                      hintText: state.usersInfo.userMartialStatus,
+                      hintStyle: const TextStyle(color: AppColors.grey),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 15,
+                  ),
+                  TextField(
+                    controller: languageController,
+                    decoration: InputDecoration(
+                      hintText: state.usersInfo.userPreferLanguage,
+                      hintStyle: const TextStyle(color: AppColors.grey),
+                    ),
+                  ),
+                ],
               ),
+            );
+          }
+
+          return const Center(
+            child: SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(),
             ),
-            const SizedBox(
-              height: 15,
-            ),
-            const TextField(
-              decoration: InputDecoration(
-                hintText: 'Address',
-                hintStyle: TextStyle(color: AppColors.grey),
-              ),
-            ),
-            const SizedBox(
-              height: 15,
-            ),
-            const TextField(
-              decoration: InputDecoration(
-                hintText: 'Gender',
-                hintStyle: TextStyle(color: AppColors.grey),
-              ),
-            ),
-            const SizedBox(
-              height: 15,
-            ),
-            const TextField(
-              decoration: InputDecoration(
-                hintText: 'Marital Status',
-                hintStyle: TextStyle(color: AppColors.grey),
-              ),
-            ),
-            const SizedBox(
-              height: 15,
-            ),
-            const TextField(
-              decoration: InputDecoration(
-                hintText: 'Prefer Language',
-                hintStyle: TextStyle(color: AppColors.grey),
-              ),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

@@ -43,7 +43,7 @@ class FileInteractionBloc
   ) : super(FileInteractionInitial()) {
     on<FileInteractionUploadFile>(uploadFile);
     // on<FileInteractionUploading>(uploadingProgress);
-    // on<FileInteractionDownloading>(downloadFile);
+    on<FileInteractionDownloading>(downloadFile);
   }
 
   Future<void> uploadFile(FileInteractionUploadFile event,
@@ -144,36 +144,38 @@ class FileInteractionBloc
     }
   }
 
-  // Future<void> downloadFile(FileInteractionDownloading event,
-  //     Emitter<FileInteractionState> emit) async {
-  //   try {
-  //     final testurl =
-  //         'gs://chat-app-d43b4.appspot.com/chats/tqyPM6a0UXJHoZiq1xII/16566755005026049008.pdf';
-  //     // final testurl =
-  //     //     'gs://chat-app-d43b4.appspot.com/chats/tqyPM6a0UXJHoZiq1xII/16566737392836129472.pdf';
-  //     final tempDir = await getTemporaryDirectory();
-  //     final path = '${tempDir.path}/${event.url}';
-  //     // if (File(path).existsSync()) {
-  //     //   await OpenFile.open(path);
-  //     // } else {
-  //     final downloadProgress =
-  //         await downloadFileUseCase.call(DownloadFileParams(
-  //             // testurl,
-  //             event.url,
-  //             path));
+  Future<void> downloadFile(FileInteractionDownloading event,
+      Emitter<FileInteractionState> emit) async {
+    try {
+      // final testurl =
+      //     'gs://chat-app-d43b4.appspot.com/chats/tqyPM6a0UXJHoZiq1xII/16566755005026049008.pdf';
+      // final testurl =
+      //     'gs://chat-app-d43b4.appspot.com/chats/tqyPM6a0UXJHoZiq1xII/16566737392836129472.pdf';
+      // final tempDir = await getTemporaryDirectory();
+      final tempDir = await getApplicationDocumentsDirectory();
+      final path = '${tempDir.path}/${event.url}';
+      final file = File(path);
+      if (file.existsSync()) {
+        await OpenFile.open(path);
+      } else {
+        final downloadProgress =
+            await downloadFileUseCase.call(DownloadFileParams(
+          // testurl,
+          event.url,
+          file,
+        ));
 
-  //     // emit(FileInteractionProgressDownloading(downloadProgress));
-  //     await emit.forEach(
-  //       downloadProgressUseCase.call(downloadProgress),
-  //       onData: (double dowProgress) {
-  //         return FileInteractionProgressDownloading(dowProgress);
-  //       },
-  //     );
-  //     // }
-  //   } on SocketException catch (e) {
-  //     emit(FileInteractinonError(e.toString()));
-  //   }
-  // }
+        await emit.forEach(
+          downloadProgressUseCase.call(downloadProgress),
+          onData: (double dowProgress) {
+            return FileInteractionProgressDownloading(dowProgress);
+          },
+        );
+      }
+    } on SocketException catch (e) {
+      emit(FileInteractinonError(e.toString()));
+    }
+  }
 
   // void uploadingProgress(FileInteractionUploading event,
   //     Emitter<FileInteractionState> emit) async {

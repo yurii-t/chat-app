@@ -79,9 +79,11 @@ class FirebaseStorageRemoteDataSourceImpl
   // }
 
   @override
-  Future<DownloadTask> downloadFile(String url, String path) async {
-    final file = File(path);
-    final downloadTask = _firebaseStorage.refFromURL(url).writeToFile(file);
+  Future<DownloadTask> downloadFile(String url, File file) async {
+    // final file = File(path);
+    final downloadTask = _firebaseStorage
+        .refFromURL(url)
+        .writeToFile(await file.create(recursive: true));
     // FirebaseStorage.instance.refFromURL(url).writeToFile(file);
 
     // final tempDir = await getTemporaryDirectory();

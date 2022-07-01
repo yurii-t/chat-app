@@ -284,64 +284,54 @@ class _ChatPageState extends State<ChatPage> {
                                     builder: (context, state) {
                                       if (state
                                           is FileInteractionProgressDownloading) {
-                                        Column(
-                                          children: [
-                                            CircularProgressIndicator(
-                                              value: state.downloadProgress
-                                                  .toDouble(),
-                                            ),
-                                          ],
-                                        );
-                                        // dowProgress =
-                                        //     state.downloadProgress.toDouble();
-                                        // progressString =
-                                        //     '${(state.downloadProgress * 100).toStringAsFixed(0)}% downloaded';
-                                        return MessageBubble(
-                                          downloaded: false, // fileDownloaded,
-                                          docSize: messagesData.docSize
-                                              .toString(), //pickedFile?.size.toString(),
-                                          downloading: true, //downloading,
-                                          downloadString:
-                                              // state.downloadProgress
-                                              //     .toString(),
-                                              progressString,
-                                          downloadValue:
+                                        dowProgress =
+                                            state.downloadProgress.toDouble();
+                                        progressString =
+                                            '${(state.downloadProgress * 100).toStringAsFixed(0)}% downloaded';
+                                        // return MessageBubble(
+                                        //   downloaded: false, // fileDownloaded,
+                                        //   docSize: messagesData.docSize
+                                        //       .toString(), //pickedFile?.size.toString(),
+                                        //   downloading: true, //downloading,
+                                        //   downloadString:
+                                        //       // state.downloadProgress
+                                        //       //     .toString(),
+                                        //       progressString,
+                                        //   downloadValue:
 
-                                              // state.downloadProgress,
-                                              dowProgress,
-                                          type: sender
-                                              ? MessageBubbleType.sendDoc
-                                              : MessageBubbleType.reciveDoc,
-                                          text: messagesData
-                                              .docName, // messagesData.message,
-                                          time: DateFormat('hh:mm a').format(
-                                              messagesData.time.toDate()),
-                                        );
+                                        //       // state.downloadProgress,
+                                        //       dowProgress,
+                                        //   type: sender
+                                        //       ? MessageBubbleType.sendDoc
+                                        //       : MessageBubbleType.reciveDoc,
+                                        //   text: messagesData
+                                        //       .docName, // messagesData.message,
+                                        //   time: DateFormat('hh:mm a').format(
+                                        //       messagesData.time.toDate()),
+                                        // );
                                       }
 
-                                      // return MessageBubble(
-                                      //   downloaded: false, // fileDownloaded,
-                                      //   docSize: messagesData.docSize
-                                      //       .toString(), //pickedFile?.size.toString(),
-                                      //   downloading: true, //downloading,
-                                      //   downloadString:
-                                      //       // state.downloadProgress
-                                      //       //     .toString(),
-                                      //       progressString,
-                                      //   downloadValue:
+                                      return MessageBubble(
+                                        downloaded: false, // fileDownloaded,
+                                        docSize: messagesData.docSize
+                                            .toString(), //pickedFile?.size.toString(),
+                                        downloading: true, //downloading,
+                                        downloadString:
+                                            // state.downloadProgress
+                                            //     .toString(),
+                                            progressString,
+                                        downloadValue:
 
-                                      //       // state.downloadProgress,
-                                      //       dowProgress,
-                                      //   type: sender
-                                      //       ? MessageBubbleType.sendDoc
-                                      //       : MessageBubbleType.reciveDoc,
-                                      //   text: messagesData
-                                      //       .docName, // messagesData.message,
-                                      //   time: DateFormat('hh:mm a')
-                                      //       .format(messagesData.time.toDate()),
-
-                                      // );
-                                      return Text('error');
+                                            // state.downloadProgress,
+                                            dowProgress,
+                                        type: sender
+                                            ? MessageBubbleType.sendDoc
+                                            : MessageBubbleType.reciveDoc,
+                                        text: messagesData
+                                            .docName, // messagesData.message,
+                                        time: DateFormat('hh:mm a')
+                                            .format(messagesData.time.toDate()),
+                                      );
                                     },
                                   ),
                                 );

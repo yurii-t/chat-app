@@ -29,8 +29,8 @@ class FirebaseStorageRepositoryImpl implements FirebaseStorageRepository {
   }
 
   @override
-  Future<DownloadTask> downloadFile(String url, String path) async {
-    return _firebaseStorageRemoteDataSource.downloadFile(url, path);
+  Future<DownloadTask> downloadFile(String url, File file) async {
+    return _firebaseStorageRemoteDataSource.downloadFile(url, file);
   }
 
   @override

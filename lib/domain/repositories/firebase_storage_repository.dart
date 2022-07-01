@@ -8,6 +8,7 @@ abstract class FirebaseStorageRepository {
   Stream<double> uploadProgress(UploadTask task);
   Future<Reference> getReference(File file, String chatId);
   // Future<double> downloadFile(String url);
-  Future<DownloadTask> downloadFile(String url, String path);
+  // Future<DownloadTask> downloadFile(String url, String path);
+  Future<DownloadTask> downloadFile(String url, File file);
   Stream<double> downloadProgress(DownloadTask downloadTask);
 }

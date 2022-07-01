@@ -7,6 +7,7 @@ abstract class FirebaseStorageRemoteDataSource {
   Future<UploadTask> uploadImage(File image, Reference ref);
   Stream<double> uploadProgress(UploadTask task);
   Future<Reference> getReference(File file, String chatId);
-  Future<DownloadTask> downloadFile(String url, String path);
+  // Future<DownloadTask> downloadFile(String url, String path);
+  Future<DownloadTask> downloadFile(String url, File file);
   Stream<double> downloadProgress(DownloadTask downloadTask);
 }

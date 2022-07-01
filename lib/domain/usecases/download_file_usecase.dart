@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:chat_app/core/usecases/use_case.dart';
 import 'package:chat_app/domain/repositories/firebase_storage_repository.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -9,13 +11,14 @@ class DownloadFileUseCase implements UseCase<DownloadTask, DownloadFileParams> {
 
   @override
   Future<DownloadTask> call(DownloadFileParams params) async {
-    return _firebaseStorageRepository.downloadFile(params.url, params.path);
+    return _firebaseStorageRepository.downloadFile(params.url, params.file);
   }
 }
 
 class DownloadFileParams {
   final String url;
-  final String path;
+  // final String path;
+  File file;
 
-  DownloadFileParams(this.url, this.path);
+  DownloadFileParams(this.url, this.file);
 }

@@ -6,6 +6,7 @@ import 'package:chat_app/presentation/pages/camera/camera_page.dart';
 import 'package:chat_app/presentation/pages/chat/chat_page.dart';
 import 'package:chat_app/presentation/pages/home_page.dart';
 import 'package:chat_app/presentation/pages/message/message_page.dart';
+import 'package:chat_app/presentation/pages/profile/my_profile_page.dart';
 import 'package:chat_app/presentation/pages/profile/profile_page.dart';
 
 import 'package:chat_app/presentation/pages/settings/setting_page.dart';
@@ -19,6 +20,7 @@ import 'package:chat_app/presentation/pages/status/status_page.dart';
     AutoRoute<void>(page: ChatPage),
     AutoRoute<void>(page: ProfilePage),
     AutoRoute<void>(page: CameraPage),
+    AutoRoute<void>(page: MyProfilePage),
 
     AutoRoute<void>(
       page: HomePage,

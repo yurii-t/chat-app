@@ -1,3 +1,6 @@
+import 'package:auto_route/auto_route.dart';
+import 'package:chat_app/presentation/widgets/custom_appbar.dart';
+import 'package:chat_app/routes/app_router.gr.dart';
 import 'package:chat_app/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -10,38 +13,32 @@ class MessagePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.white,
-        automaticallyImplyLeading: false,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            GestureDetector(
-              child: SvgPicture.asset('assets/icons/camera.svg'),
+      // backgroundColor: Colors.white,
+      appBar: CustomAppBar(
+        widgetleft: GestureDetector(
+          child: SvgPicture.asset('assets/icons/camera.svg'),
+        ),
+        widgetCenter: const Text(
+          'Message',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w400,
+            color: Colors.black,
+          ),
+        ),
+        widgetRight: GestureDetector(
+          onTap: () => context.router.push(const MyProfileRoute()),
+          child: const Text(
+            'My profile',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w400,
+              color: Colors.black,
             ),
-            const Text(
-              'Message',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w400,
-                color: Colors.black,
-              ),
-            ),
-            GestureDetector(
-              child: const Text(
-                'My profile',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w400,
-                  color: Colors.black,
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
+
       body: ListView.separated(
         separatorBuilder: (context, index) {
           return const Divider(

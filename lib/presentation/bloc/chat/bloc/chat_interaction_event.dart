@@ -103,3 +103,12 @@ class ChatInteractionsUploadImage extends ChatInteractionEvent {
         docName,
       ];
 }
+
+class ChatInteractionsSeenMessages extends ChatInteractionEvent {
+  final String senderId;
+  final String recipientId;
+
+  const ChatInteractionsSeenMessages(this.senderId, this.recipientId);
+  @override
+  List<Object> get props => [senderId, recipientId];
+}

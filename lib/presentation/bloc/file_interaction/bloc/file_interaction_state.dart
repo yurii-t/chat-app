@@ -10,28 +10,55 @@ abstract class FileInteractionState extends Equatable {
 class FileInteractionInitial extends FileInteractionState {}
 
 class FileInteractionProgressUploading extends FileInteractionState {
-  final num progress;
+  // final num progress;
+  final List<UploadingProgress> uploadProgressList;
 
-  const FileInteractionProgressUploading(this.progress);
+  const FileInteractionProgressUploading(
+    this.uploadProgressList,
+    // this.progress,
+  );
 
   @override
-  List<Object> get props => [progress];
+  List<Object> get props => [
+        uploadProgressList
+        // progress,
+      ];
 }
 
 class FileInteractionProgressDownloading extends FileInteractionState {
-  final num downloadProgress;
+  //final num downloadProgress;
+  final List<DownloadingProgress> progressList;
 
-  const FileInteractionProgressDownloading(this.downloadProgress);
+  const FileInteractionProgressDownloading(
+    this.progressList,
+    //this.downloadProgress);
+  );
 
   @override
-  List<Object> get props => [downloadProgress];
+  List<Object> get props => [progressList];
+}
+
+class DownloadingProgress {
+  final String id;
+  final double progress;
+
+  DownloadingProgress(this.id, this.progress);
 }
 
 class FileInteractinonError extends FileInteractionState {
-  final String error;
+  // final bool error;
+  // final List<MessageEntity> errorList;
+  final List<MessageModel> errorList;
 
-  const FileInteractinonError(this.error);
+  const FileInteractinonError(this.errorList);
 
   @override
-  List<Object> get props => [error];
+  List<Object> get props => [errorList];
+}
+
+class UploadingProgress {
+  final String docId;
+  final double uploadProgress;
+
+  UploadingProgress(this.docId, this.uploadProgress);
 }

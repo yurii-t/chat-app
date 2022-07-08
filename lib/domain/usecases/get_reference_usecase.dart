@@ -11,7 +11,8 @@ class GetReferenceUseCase implements UseCase<Reference, GetReferenceParams> {
 
   @override
   Future<Reference> call(GetReferenceParams params) async {
-    return _firebaseStorageRepository.getReference(params.file, params.chatId);
+    return _firebaseStorageRepository.getReference(
+        params.file, params.chatId, params.folder);
   }
 }
 
@@ -19,6 +20,7 @@ class GetReferenceUseCase implements UseCase<Reference, GetReferenceParams> {
 class GetReferenceParams {
   final File file;
   final String chatId;
+  final String folder;
 
-  GetReferenceParams(this.file, this.chatId);
+  GetReferenceParams(this.file, this.chatId, this.folder);
 }

@@ -13,7 +13,8 @@
 import 'package:auto_route/auto_route.dart' as _i15;
 import 'package:flutter/material.dart' as _i16;
 
-import '../domain/entities/user_entity.dart' as _i17;
+import '../domain/entities/message_entity.dart' as _i17;
+import '../domain/entities/user_entity.dart' as _i18;
 import '../presentation/pages/auth/enter_phone_page.dart' as _i1;
 import '../presentation/pages/auth/enter_pin_page.dart' as _i2;
 import '../presentation/pages/call/call_page.dart' as _i12;
@@ -56,11 +57,17 @@ class AppRouter extends _i15.RootStackRouter {
               recipientName: args.recipientName,
               recipientPhoneNumber: args.recipientPhoneNumber,
               senderPhoneNumber: args.senderPhoneNumber,
+              recipientImage: args.recipientImage,
               key: args.key));
     },
     ProfileRoute.name: (routeData) {
+      final args = routeData.argsAs<ProfileRouteArgs>();
       return _i15.MaterialPageX<void>(
-          routeData: routeData, child: const _i4.ProfilePage());
+          routeData: routeData,
+          child: _i4.ProfilePage(
+              allMessages: args.allMessages,
+              userid: args.userid,
+              key: args.key));
     },
     CameraRoute.name: (routeData) {
       return _i15.MaterialPageX<void>(
@@ -71,8 +78,14 @@ class AppRouter extends _i15.RootStackRouter {
           routeData: routeData, child: const _i6.MyProfilePage());
     },
     FilesNavigationRoute.name: (routeData) {
+      final args = routeData.argsAs<FilesNavigationRouteArgs>();
       return _i15.MaterialPageX<void>(
-          routeData: routeData, child: const _i7.FilesNavigationPage());
+          routeData: routeData,
+          child: _i7.FilesNavigationPage(
+              allMessages: args.allMessages,
+              recipientName: args.recipientName,
+              recipientPhoto: args.recipientPhoto,
+              key: args.key));
     },
     HomeRoute.name: (routeData) {
       final args = routeData.argsAs<HomeRouteArgs>();
@@ -81,12 +94,16 @@ class AppRouter extends _i15.RootStackRouter {
           child: _i8.HomePage(userId: args.userId, key: args.key));
     },
     MediaRoute.name: (routeData) {
+      final args = routeData.argsAs<MediaRouteArgs>();
       return _i15.MaterialPageX<void>(
-          routeData: routeData, child: const _i9.MediaPage());
+          routeData: routeData,
+          child: _i9.MediaPage(imagesList: args.imagesList, key: args.key));
     },
     FilesRoute.name: (routeData) {
+      final args = routeData.argsAs<FilesRouteArgs>();
       return _i15.MaterialPageX<void>(
-          routeData: routeData, child: const _i10.FilesPage());
+          routeData: routeData,
+          child: _i10.FilesPage(filesList: args.filesList, key: args.key));
     },
     StatusRoute.name: (routeData) {
       final args = routeData.argsAs<StatusRouteArgs>();
@@ -181,6 +198,7 @@ class ChatRoute extends _i15.PageRouteInfo<ChatRouteArgs> {
       required String recipientName,
       required String recipientPhoneNumber,
       required String senderPhoneNumber,
+      required String recipientImage,
       _i16.Key? key})
       : super(ChatRoute.name,
             path: '/chat-page',
@@ -191,6 +209,7 @@ class ChatRoute extends _i15.PageRouteInfo<ChatRouteArgs> {
                 recipientName: recipientName,
                 recipientPhoneNumber: recipientPhoneNumber,
                 senderPhoneNumber: senderPhoneNumber,
+                recipientImage: recipientImage,
                 key: key));
 
   static const String name = 'ChatRoute';
@@ -204,6 +223,7 @@ class ChatRouteArgs {
       required this.recipientName,
       required this.recipientPhoneNumber,
       required this.senderPhoneNumber,
+      required this.recipientImage,
       this.key});
 
   final String senderUid;
@@ -218,20 +238,45 @@ class ChatRouteArgs {
 
   final String senderPhoneNumber;
 
+  final String recipientImage;
+
   final _i16.Key? key;
 
   @override
   String toString() {
-    return 'ChatRouteArgs{senderUid: $senderUid, recipientUid: $recipientUid, senderName: $senderName, recipientName: $recipientName, recipientPhoneNumber: $recipientPhoneNumber, senderPhoneNumber: $senderPhoneNumber, key: $key}';
+    return 'ChatRouteArgs{senderUid: $senderUid, recipientUid: $recipientUid, senderName: $senderName, recipientName: $recipientName, recipientPhoneNumber: $recipientPhoneNumber, senderPhoneNumber: $senderPhoneNumber, recipientImage: $recipientImage, key: $key}';
   }
 }
 
 /// generated route for
 /// [_i4.ProfilePage]
-class ProfileRoute extends _i15.PageRouteInfo<void> {
-  const ProfileRoute() : super(ProfileRoute.name, path: '/profile-page');
+class ProfileRoute extends _i15.PageRouteInfo<ProfileRouteArgs> {
+  ProfileRoute(
+      {required List<_i17.MessageEntity> allMessages,
+      required String userid,
+      _i16.Key? key})
+      : super(ProfileRoute.name,
+            path: '/profile-page',
+            args: ProfileRouteArgs(
+                allMessages: allMessages, userid: userid, key: key));
 
   static const String name = 'ProfileRoute';
+}
+
+class ProfileRouteArgs {
+  const ProfileRouteArgs(
+      {required this.allMessages, required this.userid, this.key});
+
+  final List<_i17.MessageEntity> allMessages;
+
+  final String userid;
+
+  final _i16.Key? key;
+
+  @override
+  String toString() {
+    return 'ProfileRouteArgs{allMessages: $allMessages, userid: $userid, key: $key}';
+  }
 }
 
 /// generated route for
@@ -252,12 +297,45 @@ class MyProfileRoute extends _i15.PageRouteInfo<void> {
 
 /// generated route for
 /// [_i7.FilesNavigationPage]
-class FilesNavigationRoute extends _i15.PageRouteInfo<void> {
-  const FilesNavigationRoute({List<_i15.PageRouteInfo>? children})
+class FilesNavigationRoute
+    extends _i15.PageRouteInfo<FilesNavigationRouteArgs> {
+  FilesNavigationRoute(
+      {required List<_i17.MessageEntity> allMessages,
+      required String recipientName,
+      required String recipientPhoto,
+      _i16.Key? key,
+      List<_i15.PageRouteInfo>? children})
       : super(FilesNavigationRoute.name,
-            path: '/files-navigation-page', initialChildren: children);
+            path: '/files-navigation-page',
+            args: FilesNavigationRouteArgs(
+                allMessages: allMessages,
+                recipientName: recipientName,
+                recipientPhoto: recipientPhoto,
+                key: key),
+            initialChildren: children);
 
   static const String name = 'FilesNavigationRoute';
+}
+
+class FilesNavigationRouteArgs {
+  const FilesNavigationRouteArgs(
+      {required this.allMessages,
+      required this.recipientName,
+      required this.recipientPhoto,
+      this.key});
+
+  final List<_i17.MessageEntity> allMessages;
+
+  final String recipientName;
+
+  final String recipientPhoto;
+
+  final _i16.Key? key;
+
+  @override
+  String toString() {
+    return 'FilesNavigationRouteArgs{allMessages: $allMessages, recipientName: $recipientName, recipientPhoto: $recipientPhoto, key: $key}';
+  }
 }
 
 /// generated route for
@@ -290,24 +368,56 @@ class HomeRouteArgs {
 
 /// generated route for
 /// [_i9.MediaPage]
-class MediaRoute extends _i15.PageRouteInfo<void> {
-  const MediaRoute() : super(MediaRoute.name, path: 'media-page');
+class MediaRoute extends _i15.PageRouteInfo<MediaRouteArgs> {
+  MediaRoute({required List<_i17.MessageEntity> imagesList, _i16.Key? key})
+      : super(MediaRoute.name,
+            path: 'media-page',
+            args: MediaRouteArgs(imagesList: imagesList, key: key));
 
   static const String name = 'MediaRoute';
 }
 
+class MediaRouteArgs {
+  const MediaRouteArgs({required this.imagesList, this.key});
+
+  final List<_i17.MessageEntity> imagesList;
+
+  final _i16.Key? key;
+
+  @override
+  String toString() {
+    return 'MediaRouteArgs{imagesList: $imagesList, key: $key}';
+  }
+}
+
 /// generated route for
 /// [_i10.FilesPage]
-class FilesRoute extends _i15.PageRouteInfo<void> {
-  const FilesRoute() : super(FilesRoute.name, path: 'files-page');
+class FilesRoute extends _i15.PageRouteInfo<FilesRouteArgs> {
+  FilesRoute({required List<_i17.MessageEntity> filesList, _i16.Key? key})
+      : super(FilesRoute.name,
+            path: 'files-page',
+            args: FilesRouteArgs(filesList: filesList, key: key));
 
   static const String name = 'FilesRoute';
+}
+
+class FilesRouteArgs {
+  const FilesRouteArgs({required this.filesList, this.key});
+
+  final List<_i17.MessageEntity> filesList;
+
+  final _i16.Key? key;
+
+  @override
+  String toString() {
+    return 'FilesRouteArgs{filesList: $filesList, key: $key}';
+  }
 }
 
 /// generated route for
 /// [_i11.StatusPage]
 class StatusRoute extends _i15.PageRouteInfo<StatusRouteArgs> {
-  StatusRoute({required _i17.UserEntity userInfo, _i16.Key? key})
+  StatusRoute({required _i18.UserEntity userInfo, _i16.Key? key})
       : super(StatusRoute.name,
             path: 'status-page',
             args: StatusRouteArgs(userInfo: userInfo, key: key));
@@ -318,7 +428,7 @@ class StatusRoute extends _i15.PageRouteInfo<StatusRouteArgs> {
 class StatusRouteArgs {
   const StatusRouteArgs({required this.userInfo, this.key});
 
-  final _i17.UserEntity userInfo;
+  final _i18.UserEntity userInfo;
 
   final _i16.Key? key;
 
@@ -339,7 +449,7 @@ class CallRoute extends _i15.PageRouteInfo<void> {
 /// generated route for
 /// [_i13.MessagePage]
 class MessageRoute extends _i15.PageRouteInfo<MessageRouteArgs> {
-  MessageRoute({required _i17.UserEntity userInfo, _i16.Key? key})
+  MessageRoute({required _i18.UserEntity userInfo, _i16.Key? key})
       : super(MessageRoute.name,
             path: 'message-page',
             args: MessageRouteArgs(userInfo: userInfo, key: key));
@@ -350,7 +460,7 @@ class MessageRoute extends _i15.PageRouteInfo<MessageRouteArgs> {
 class MessageRouteArgs {
   const MessageRouteArgs({required this.userInfo, this.key});
 
-  final _i17.UserEntity userInfo;
+  final _i18.UserEntity userInfo;
 
   final _i16.Key? key;
 

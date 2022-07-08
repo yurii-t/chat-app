@@ -11,9 +11,11 @@ class FirebaseStorageRemoteDataSourceImpl
     implements FirebaseStorageRemoteDataSource {
   final FirebaseStorage _firebaseStorage = FirebaseStorage.instance;
   @override
-  Future<Reference> getReference(File file, String chatId) async {
+  Future<Reference> getReference(
+      File file, String chatId, String folder) async {
     return _firebaseStorage.ref().child(
-        'chats/$chatId/${DateTime.now().millisecondsSinceEpoch}${getNameOnly(file.path)}');
+        '$folder/$chatId/${DateTime.now().millisecondsSinceEpoch}${getNameOnly(file.path)}');
+    // 'chats/$chatId/${DateTime.now().millisecondsSinceEpoch}${getNameOnly(file.path)}');
   }
 
   @override

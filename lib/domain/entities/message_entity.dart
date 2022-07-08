@@ -12,6 +12,8 @@ class MessageEntity extends Equatable {
   final Timestamp time;
   final String docSize;
   final String docName;
+  final bool isRead;
+  final String docId;
 
   const MessageEntity({
     required this.senderName,
@@ -24,6 +26,8 @@ class MessageEntity extends Equatable {
     required this.time,
     required this.docSize,
     required this.docName,
+    required this.isRead,
+    required this.docId,
   });
 
   @override
@@ -38,5 +42,7 @@ class MessageEntity extends Equatable {
         time,
         docSize,
         docName,
+        isRead,
+        docId,
       ];
 }

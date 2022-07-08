@@ -36,6 +36,7 @@ dependencies:
   firebase_auth: ^3.3.11
   firebase_core: ^1.13.1
   firebase_storage: ^10.2.12
+  firebase_messaging: ^11.4.4
   flutter_bloc: ^8.0.1 
   flutter_svg: ^1.0.3
   intl_phone_number_input: ^0.7.0+2

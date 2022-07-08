@@ -20,6 +20,9 @@ abstract class FirebaseRepository {
 
   Future<void> createChat(String uid, String otherUid);
   Future<void> sendMessage(MessageEntity messageEntity, String chatId);
+  // Future<String> sendMessage(MessageEntity messageEntity, String chatId);
+  Future<String> setMessageId(String chatId);
+
   Future<void> addActiveChatDetails(ChatEntity chatEntity);
   Stream<List<MessageEntity>> getMessages(String chatId);
   Stream<List<ChatEntity>> getActiveChats();
@@ -27,4 +30,6 @@ abstract class FirebaseRepository {
   Future<bool> isSignIn();
   Future<void> signOut();
   Future<String> getChatId(String uid, String otherUid);
+  Future<void> readMessages(String chatId, String sederUID);
+  Future<void> getNewMessages(String chatId, String recepientUid);
 }

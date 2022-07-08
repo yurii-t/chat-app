@@ -69,6 +69,14 @@ class MessagePage extends StatelessWidget {
                   )
                 : ListView.separated(
                     separatorBuilder: (context, index) {
+                      context.read<ActiveChatsBloc>().add(
+                            ActiveChatsNewMessagesCount(
+                              state.chats[index].chatId,
+                              // userInfo.userId,
+                              state.chats[index].recepientUid,
+                            ),
+                          );
+
                       return const Divider(
                         height: 1,
                         thickness: 2,
@@ -82,7 +90,7 @@ class MessagePage extends StatelessWidget {
                         key: const ValueKey(0),
                         endActionPane: ActionPane(
                           extentRatio: 0.7,
-                          motion: ScrollMotion(),
+                          motion: const ScrollMotion(),
                           children: [
                             CustomSlidableAction(
                               onPressed: null,
@@ -154,18 +162,29 @@ class MessagePage extends StatelessWidget {
                           onTap: () {
                             // context.read<ChatInteractionBloc>().add(ChatInte)
                             context.router.push(ChatRoute(
-                                senderUid: userInfo.userId,
-                                senderName: chatsData.senderName,
-                                senderPhoneNumber: chatsData.senderPhoneNumber,
-                                recipientUid: chatsData.recepientUid,
-                                recipientName: chatsData.recepientName,
-                                recipientPhoneNumber:
-                                    chatsData.recepientPhoneNumber));
+                              senderUid: userInfo.userId,
+                              senderName: chatsData.senderName,
+                              senderPhoneNumber: chatsData.senderPhoneNumber,
+                              recipientUid: chatsData.recepientUid,
+                              recipientName: chatsData.recepientName,
+                              recipientPhoneNumber:
+                                  chatsData.recepientPhoneNumber,
+                              recipientImage: userInfo.userImage,
+                            ));
                           },
                           contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 16),
-                          leading: const CircleAvatar(
+                            horizontal: 16,
+                            vertical: 16,
+                          ),
+                          leading: CircleAvatar(
+                            backgroundColor: AppColors.grey,
                             radius: 30,
+                            child: userInfo.userImage != ''
+                                ? Image.network(userInfo.userImage)
+                                : SvgPicture.asset(
+                                    'assets/icons/media.svg',
+                                    fit: BoxFit.fill,
+                                  ),
                           ),
                           title: Padding(
                             padding: const EdgeInsets.only(bottom: 8),
@@ -207,22 +226,24 @@ class MessagePage extends StatelessWidget {
                                   ),
                                 ),
                               ),
-
-                              Container(
-                                // margin: EdgeInsets.only(top: 16),
-                                alignment: Alignment.center,
-                                width: 22,
-                                height: 22,
-                                decoration: const BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: AppColors.green,
-                                ),
-                                child: const Text(
-                                  '2',
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ),
-                              // SvgPicture.asset('assets/icons/check_marks.svg'),
+                              if (chatsData.newMessages > 0)
+                                Container(
+                                  // margin: EdgeInsets.only(top: 16),
+                                  alignment: Alignment.center,
+                                  width: 22,
+                                  height: 22,
+                                  decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: AppColors.green,
+                                  ),
+                                  child: Text(
+                                    chatsData.newMessages.toString(),
+                                    style: const TextStyle(color: Colors.white),
+                                  ),
+                                )
+                              else
+                                SvgPicture.asset(
+                                    'assets/icons/check_marks.svg'),
                             ],
                           ),
                         ),

@@ -151,9 +151,10 @@ class _MyProfilePageState extends State<MyProfilePage> {
                           Expanded(
                             child: ElevatedButton(
                               onPressed: () {
+                                var pickedImage = File(image?.path ?? '');
                                 context.read<CurrentUserBloc>().add(CreateUser(
                                       '${firstNameController.text} ${lastNameController.text}',
-                                      '', //userImage,
+                                      pickedImage, //userImage,
                                       adressController.text,
                                       genderController.text,
                                       martialController.text,
@@ -299,9 +300,9 @@ class _MyProfilePageState extends State<MyProfilePage> {
                     child: CircleAvatar(
                       radius: 45,
                       backgroundColor: AppColors.lightGrey,
-                      backgroundImage: image != null
-                          ? Image.file(image!).image
-                          : null, //Image.asset('assets/background.png').image,
+                      backgroundImage: NetworkImage(
+                          state.usersInfo.userImage), //Image.file(image!).image
+                      //Image.asset('assets/background.png').image,
                       child: SvgPicture.asset('assets/icons/camera.svg'),
                     ),
                   ),

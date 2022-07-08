@@ -79,7 +79,11 @@ class FirebaseRepositoryImpl implements FirebaseRepository {
 
   @override
   Future<void> sendMessage(MessageEntity messageEntity, String chatId) =>
+      // Future<String> sendMessage(MessageEntity messageEntity, String chatId) =>
       firebaseRemoteDataSource.sendMessage(messageEntity, chatId);
+  @override
+  Future<String> setMessageId(String chatId) =>
+      firebaseRemoteDataSource.setMessageId(chatId);
 
   @override
   Future<String> getCurrentUserUid() =>
@@ -91,4 +95,12 @@ class FirebaseRepositoryImpl implements FirebaseRepository {
   @override
   Future<String> getChatId(String uid, String otherUid) =>
       firebaseRemoteDataSource.getChatId(uid, otherUid);
+
+  @override
+  Future<void> readMessages(String chatId, String sederUID) =>
+      firebaseRemoteDataSource.readMessages(chatId, sederUID);
+
+  @override
+  Future<void> getNewMessages(String chatId, String recepientUid) =>
+      firebaseRemoteDataSource.getNewMessages(chatId, recepientUid);
 }

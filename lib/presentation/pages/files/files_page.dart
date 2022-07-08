@@ -1,27 +1,40 @@
-import 'package:chat_app/presentation/widgets/custom_appbar.dart';
+import 'package:chat_app/domain/entities/message_entity.dart';
 import 'package:chat_app/theme/app_colors.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:grouped_list/grouped_list.dart';
 
 class FilesPage extends StatefulWidget {
-  const FilesPage({Key? key}) : super(key: key);
+  final List<MessageEntity> filesList;
+  const FilesPage({required this.filesList, Key? key}) : super(key: key);
 
   @override
   State<FilesPage> createState() => _FilesPageState();
 }
 
 class _FilesPageState extends State<FilesPage> {
-  List<Map<String, String>> _elements = [
-    {'name': 'Doc1', 'date': 'June 2022'},
-    {'name': 'Doc123', 'date': 'June 2022'},
-    {'name': 'ddocu', 'date': 'May 2022'},
-    {'name': 'Dddassd', 'date': 'May 2022'},
-    {'name': 'Eeasd', 'date': 'May 2022'},
-    {'name': 'Ffdasd', 'date': 'April 2022'},
-    {'name': 'Fsd', 'date': 'April 2022'},
-    {'name': 'Ffda', 'date': 'April 2022'},
-  ];
+  List<MessageEntity> filesItems = [];
+  @override
+  void initState() {
+    filesItems = widget.filesList;
+    super.initState();
+  }
+
+  void _searchFiles(String query) {
+    List<MessageEntity> results = [];
+    results = query.isEmpty
+        ? widget.filesList
+        : widget.filesList
+            .where((item) =>
+                item.docName.toLowerCase().contains(query.toLowerCase()))
+            .toList();
+
+    setState(() {
+      filesItems = results;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -30,6 +43,7 @@ class _FilesPageState extends State<FilesPage> {
         child: Column(
           children: [
             TextField(
+              onChanged: _searchFiles,
               textAlignVertical: TextAlignVertical.center,
               decoration: InputDecoration(
                 contentPadding:
@@ -57,15 +71,19 @@ class _FilesPageState extends State<FilesPage> {
               height: 12,
             ),
             Expanded(
-              child: GroupedListView<dynamic, String>(
-                elements: _elements,
-                groupBy: (dynamic element) => element['date'] as String,
+              child: GroupedListView<MessageEntity, String>(
+                elements: filesItems, // _elements,
+                groupBy: (element) => DateFormat('MMMM yyyy')
+                    .format(element.time.toDate())
+                    .toString(),
+                //       .format( filesList[element].time.toDate()).toString(),
+                //element['date'] as String,
                 groupComparator: (value1, value2) => value2.compareTo(value1),
-                itemComparator: (dynamic item1, dynamic item2) =>
-                    item1['name'].compareTo(item2['name']) as int,
+                itemComparator: (item1, item2) =>
+                    item1.docName.compareTo(item2.docName),
                 order: GroupedListOrder.ASC,
                 useStickyGroupSeparators: false,
-                groupSeparatorBuilder: (String value) => Padding(
+                groupSeparatorBuilder: (value) => Padding(
                   padding: const EdgeInsets.all(8),
                   child: Text(
                     value,
@@ -77,19 +95,21 @@ class _FilesPageState extends State<FilesPage> {
                     ),
                   ),
                 ),
-                itemBuilder: (c, dynamic element) {
+                itemBuilder: (c, element) {
                   return Card(
                     elevation: 0,
                     child: ListTile(
                       contentPadding: EdgeInsets.zero,
-                      leading: SvgPicture.asset('assets/icons/doc.svg'),
+                      leading: element.docName.contains('.doc')
+                          ? SvgPicture.asset('assets/icons/doc.svg')
+                          : SvgPicture.asset('assets/icons/pdf.svg'),
                       title: Padding(
                         padding: const EdgeInsets.only(bottom: 8),
                         child: Row(
                           children: [
                             Expanded(
                               child: Text(
-                                element['name'] as String,
+                                element.docName,
                                 style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w400,
@@ -97,9 +117,15 @@ class _FilesPageState extends State<FilesPage> {
                                 ),
                               ),
                             ),
-                            const Text(
-                              'June 7 2022 at 13:00',
-                              style: TextStyle(
+                            Text(
+                              // ignore: prefer_interpolation_to_compose_strings
+                              DateFormat('MMMM d, yyyy')
+                                      .format(element.time.toDate()) +
+                                  ' at ' +
+                                  DateFormat('HH:mm')
+                                      .format(element.time.toDate()),
+
+                              style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w400,
                                 color: AppColors.numberPhoneTextGrey,
@@ -108,9 +134,9 @@ class _FilesPageState extends State<FilesPage> {
                           ],
                         ),
                       ),
-                      subtitle: const Text(
-                        '12,3 MB',
-                        style: TextStyle(
+                      subtitle: Text(
+                        element.docSize,
+                        style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w400,
                           color: AppColors.numberPhoneTextGrey,

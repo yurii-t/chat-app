@@ -10,26 +10,30 @@ class MessageBubble extends StatelessWidget {
   const MessageBubble({
     required this.type,
     required this.time,
+    required this.error,
+    required this.seen,
     this.text,
-    this.seen,
     this.downloaded,
-    this.error = false,
     this.docSize,
     this.downloading,
     this.downloadValue,
     this.downloadString,
+    this.uploadValue,
+    this.uploadString,
     Key? key,
   }) : super(key: key);
   final MessageBubbleType type;
   final String time; //DateTime...
   final String? text;
-  final bool? seen;
+  final bool seen;
   final bool? downloaded;
   final bool error;
   final String? docSize;
   final bool? downloading;
   final num? downloadValue;
   final String? downloadString;
+  final num? uploadValue;
+  final String? uploadString;
 
   @override
   Widget build(BuildContext context) {
@@ -38,14 +42,16 @@ class MessageBubble extends StatelessWidget {
 
       return Align(
         alignment: (type == MessageBubbleType.sendMessage ||
-                type == MessageBubbleType.sendImage ||
-                type == MessageBubbleType.sendDoc)
+                    type == MessageBubbleType.sendImage ||
+                    type == MessageBubbleType.sendDoc) ||
+                type == MessageBubbleType.sendDocError
             ? Alignment.centerRight
             : Alignment.centerLeft,
-        child: !error
+        child: error == false
             ? buildMessageBubble(
                 maxBubbleWidth,
                 Colors.transparent,
+                context,
               )
             : GestureDetector(
                 onTap: () {
@@ -117,6 +123,7 @@ class MessageBubble extends StatelessWidget {
                     buildMessageBubble(
                       maxBubbleWidth,
                       Colors.red,
+                      context,
                     ),
                     const SizedBox(
                       height: 5,
@@ -133,6 +140,7 @@ class MessageBubble extends StatelessWidget {
   Widget buildMessageBubble(
     double maxWidth,
     Color errorBorder,
+    BuildContext context,
   ) {
     switch (type) {
       case MessageBubbleType.sendMessage:
@@ -190,7 +198,8 @@ class MessageBubble extends StatelessWidget {
         }
       case MessageBubbleType.sendDoc:
         {
-          return DocContainer(
+          return DocContainerSend(
+            seen: seen,
             docName: text ?? 'doc',
             docSize: docSize ?? '',
             color: AppColors.green,
@@ -198,13 +207,14 @@ class MessageBubble extends StatelessWidget {
             textColor: AppColors.white,
             subTextColor: AppColors.white,
             border: BorderRadius.circular(16),
-            downloaded: true,
             errorBorder: errorBorder,
+            uploadValue: uploadValue ?? 0,
+            uploadString: uploadString ?? '',
           );
         }
       case MessageBubbleType.reciveDoc:
         {
-          return DocContainer(
+          return DocContainerRecive(
             docName: text ?? 'doc',
             docSize: docSize ?? '',
             color: AppColors.lightGrey,
@@ -216,18 +226,45 @@ class MessageBubble extends StatelessWidget {
               topRight: Radius.circular(19),
               bottomRight: Radius.circular(19),
             ),
-            downloaded: downloaded,
-            downloading: downloading,
-            downloadValue: downloadValue,
-            downloadString: downloadString,
+            downloadValue: downloadValue ?? 0,
+            downloadString: downloadString ?? '',
           );
+        }
+      case MessageBubbleType.sendDocError:
+        {
+          return DocContainerSendError(
+            seen: seen,
+            docName: text ?? 'doc',
+            docSize: docSize ?? '',
+            color: AppColors.green,
+            time: time,
+            textColor: AppColors.white,
+            subTextColor: AppColors.white,
+            border: BorderRadius.circular(16),
+            errorBorder: Colors.red,
+            uploadValue: uploadValue ?? 0,
+            uploadString: uploadString ?? '',
+          );
+          // return DocContainerSendError(
+          // seen: seen,
+          //     docName: text ?? 'doc',
+          //     docSize: docSize ?? '',
+          //     color: AppColors.green,
+          //     time: time,
+          //     textColor: AppColors.white,
+          //     subTextColor: AppColors.white,
+          //     border: BorderRadius.circular(16),
+          //     errorBorder: Colors.red,
+          //     uploadValue: uploadValue ?? 0,
+          //     uploadString: uploadString ?? '',
+          //   );
         }
     }
   }
 }
 
-class DocContainer extends StatelessWidget {
-  const DocContainer({
+class DocContainerSend extends StatelessWidget {
+  const DocContainerSend({
     required this.color,
     required this.time,
     required this.textColor,
@@ -235,11 +272,10 @@ class DocContainer extends StatelessWidget {
     required this.border,
     required this.docSize,
     required this.docName,
-    this.downloaded,
+    required this.uploadValue,
+    required this.uploadString,
+    required this.seen,
     this.errorBorder,
-    this.downloading,
-    this.downloadValue,
-    this.downloadString,
     Key? key,
   }) : super(key: key);
   final Color color;
@@ -247,19 +283,19 @@ class DocContainer extends StatelessWidget {
   final String time;
   final Color textColor;
   final Color subTextColor;
-  final bool? downloaded;
   final Color? errorBorder;
-  final bool? downloading;
-  final num? downloadValue;
-  final String? downloadString;
+  final bool seen;
+
   final String docSize;
   final String docName;
+  final num uploadValue;
+  final String uploadString;
 
   @override
   Widget build(BuildContext context) {
-    final isDownloaded = downloaded == true
-        ? SvgPicture.asset('assets/icons/open_doc.svg')
-        : SvgPicture.asset('assets/icons/download_doc.svg');
+    // final isDownloaded = downloaded == true
+    //     ? SvgPicture.asset('assets/icons/open_doc.svg')
+    //     : SvgPicture.asset('assets/icons/download_doc.svg');
 
     return Container(
       constraints:
@@ -272,11 +308,13 @@ class DocContainer extends StatelessWidget {
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-        leading: downloading == true
+        leading: uploadValue < 1
             ? CircularProgressIndicator(
-                value: downloadValue?.toDouble(),
+                value: uploadValue.toDouble(),
               )
-            : isDownloaded,
+            : uploadValue >= 1
+                ? SvgPicture.asset('assets/icons/open_doc.svg')
+                : SvgPicture.asset('assets/icons/open_doc.svg'),
         // downloaded == true
         //     ? SvgPicture.asset('assets/icons/open_doc.svg')
         //     : SvgPicture.asset('assets/icons/download_doc.svg'),
@@ -292,7 +330,215 @@ class DocContainer extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                downloading != true ? docSize : downloadString ?? '',
+                uploadValue >= 1
+                    ? docSize
+                    : uploadValue < 1
+                        ? uploadString
+                        : docSize,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: subTextColor,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ),
+            Row(
+              children: [
+                Text(
+                  '$time',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: subTextColor,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+                seen == true
+                    ? SvgPicture.asset('assets/icons/message_checks.svg')
+                    : const Text(''),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class DocContainerSendError extends StatelessWidget {
+  const DocContainerSendError({
+    required this.color,
+    required this.time,
+    required this.textColor,
+    required this.subTextColor,
+    required this.border,
+    required this.docSize,
+    required this.docName,
+    required this.uploadValue,
+    required this.uploadString,
+    required this.seen,
+    required this.errorBorder,
+    Key? key,
+  }) : super(key: key);
+  final Color color;
+  final BorderRadius border;
+  final String time;
+  final Color textColor;
+  final Color subTextColor;
+  final Color errorBorder;
+  final bool seen;
+
+  final String docSize;
+  final String docName;
+  final num uploadValue;
+  final String uploadString;
+
+  @override
+  Widget build(BuildContext context) {
+    // final isDownloaded = downloaded == true
+    //     ? SvgPicture.asset('assets/icons/open_doc.svg')
+    //     : SvgPicture.asset('assets/icons/download_doc.svg');
+
+    return Container(
+      constraints:
+          BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.7),
+      margin: const EdgeInsets.symmetric(vertical: 5),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: border,
+        border: Border.all(color: errorBorder),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+        leading: SvgPicture.asset('assets/icons/open_doc.svg'),
+        // downloaded == true
+        //     ? SvgPicture.asset('assets/icons/open_doc.svg')
+        //     : SvgPicture.asset('assets/icons/download_doc.svg'),
+        title: Text(
+          docName,
+          style: TextStyle(
+            fontSize: 15,
+            color: textColor,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        subtitle: Row(
+          children: [
+            Expanded(
+              child: Text(
+                docSize,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: subTextColor,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ),
+            Row(
+              children: [
+                Text(
+                  '$time',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: subTextColor,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+                seen == true
+                    ? SvgPicture.asset('assets/icons/message_checks.svg')
+                    : const Text(''),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class DocContainerRecive extends StatelessWidget {
+  const DocContainerRecive({
+    required this.color,
+    required this.time,
+    required this.textColor,
+    required this.subTextColor,
+    required this.border,
+    required this.docSize,
+    required this.docName,
+    required this.downloadValue,
+    required this.downloadString,
+    this.errorBorder,
+    Key? key,
+  }) : super(key: key);
+  final Color color;
+  final BorderRadius border;
+  final String time;
+  final Color textColor;
+  final Color subTextColor;
+
+  final Color? errorBorder;
+
+  final num downloadValue;
+  final String downloadString;
+  final String docSize;
+  final String docName;
+
+  @override
+  Widget build(BuildContext context) {
+    // final downloading = if(downloadValue <1){  CircularProgressIndicator(
+    //             value: downloadValue.toDouble()
+    //           );} SvgPicture.asset('assets/icons/open_doc.svg');
+    // final isDownloaded = downloaded
+    //     ? SvgPicture.asset('assets/icons/open_doc.svg')
+    //     : SvgPicture.asset('assets/icons/download_doc.svg');
+
+    return Container(
+      constraints:
+          BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.7),
+      margin: const EdgeInsets.symmetric(vertical: 5),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: border,
+        border: Border.all(color: errorBorder ?? Colors.transparent),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+        leading: downloadValue < 1
+            ? CircularProgressIndicator(
+                value: downloadValue.toDouble(),
+              )
+            : downloadValue >= 1
+                ? SvgPicture.asset('assets/icons/open_doc.svg')
+                : SvgPicture.asset('assets/icons/download_doc.svg'),
+        //( if(downloadValue <1){ CircularProgressIndicator(
+        //         value: downloadValue.toDouble()
+        //       );}else if(downloadValue >=1){
+        //         SvgPicture.asset('assets/icons/open_doc.svg')
+        //       }else SvgPicture.asset('assets/icons/download_doc.svg');)
+        // !downloading
+        //     ? SvgPicture.asset('assets/icons/download_doc.svg')
+        //     : dow
+        // downloaded == true
+        //     ? SvgPicture.asset('assets/icons/open_doc.svg')
+        //     : SvgPicture.asset('assets/icons/download_doc.svg'),
+
+        title: Text(
+          docName,
+          style: TextStyle(
+            fontSize: 15,
+            color: textColor,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        subtitle: Row(
+          children: [
+            Expanded(
+              child: Text(
+                // downloaded ? docSize : downloadString,
+                downloadValue < 1
+                    ? downloadString
+                    : downloadValue >= 1
+                        ? docSize
+                        : docSize,
                 style: TextStyle(
                   fontSize: 12,
                   color: subTextColor,
@@ -333,7 +579,7 @@ class ImageCotainer extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Container(
-        clipBehavior: Clip.antiAliasWithSaveLayer,
+        clipBehavior: Clip.hardEdge,
         width: MediaQuery.of(context).size.width * 0.8,
         height: MediaQuery.of(context).size.height * 0.3,
         decoration: BoxDecoration(
@@ -442,7 +688,7 @@ class MessageContainer extends StatelessWidget {
                     ),
                   ),
                   const TextSpan(
-                    text: '00:00', //time
+                    text: '00:00:00', //time
                     style: TextStyle(
                       color: Colors.transparent,
                     ),
@@ -484,5 +730,6 @@ enum MessageBubbleType {
   sendImage,
   reciveImage,
   sendDoc,
-  reciveDoc
+  reciveDoc,
+  sendDocError,
 }

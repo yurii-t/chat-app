@@ -12,6 +12,7 @@ class ChatEntity extends Equatable {
   final String recentTextMessage;
   final bool isRead;
   final Timestamp time;
+  final int newMessages;
 
   const ChatEntity({
     required this.chatId,
@@ -24,6 +25,7 @@ class ChatEntity extends Equatable {
     required this.recentTextMessage,
     required this.isRead,
     required this.time,
+    required this.newMessages,
   });
 
   @override
@@ -37,5 +39,6 @@ class ChatEntity extends Equatable {
         recentTextMessage,
         isRead,
         time,
+        newMessages,
       ];
 }

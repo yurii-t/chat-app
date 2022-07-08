@@ -99,14 +99,18 @@ class StatusPage extends StatelessWidget {
                         recipientUid: userData.userId,
                         recipientName: userData.userName,
                         recipientPhoneNumber: userData.userPhone,
+                        recipientImage: userData.userImage,
                       ));
                     },
                     contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 16),
+                      horizontal: 16,
+                      vertical: 16,
+                    ),
                     leading: CircleAvatar(
-                        // backgroundImage:
-                        //     NetworkImage(state.allUsers[index].userImage) ?? null,
-                        ),
+                      backgroundImage: state.allUsers[index].userImage != ''
+                          ? NetworkImage(state.allUsers[index].userImage)
+                          : null,
+                    ),
                     title: Text(state.allUsers[index].userName),
                   );
                 },

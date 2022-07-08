@@ -1,13 +1,13 @@
+import 'package:chat_app/domain/entities/message_entity.dart';
 import 'package:flutter/material.dart';
 
-class MediaPage extends StatefulWidget {
-  const MediaPage({Key? key}) : super(key: key);
+class MediaPage extends StatelessWidget {
+  final List<MessageEntity> imagesList;
+  const MediaPage({
+    required this.imagesList,
+    Key? key,
+  }) : super(key: key);
 
-  @override
-  State<MediaPage> createState() => _MediaPageState();
-}
-
-class _MediaPageState extends State<MediaPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -20,14 +20,24 @@ class _MediaPageState extends State<MediaPage> {
             crossAxisSpacing: 5,
             mainAxisSpacing: 5,
           ),
-          itemCount: 10,
+          itemCount: imagesList.length,
           itemBuilder: (ctx, index) {
             return Container(
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: Colors.amber,
-                borderRadius: BorderRadius.circular(4),
-              ),
+                  color: Colors.amber,
+                  borderRadius: BorderRadius.circular(4),
+                  image: DecorationImage(
+                      image: NetworkImage(
+                        imagesList[index].message,
+                      ),
+                      fit: BoxFit
+                          .fill) //Image.network(imagesList[index].message,)
+                  ),
+              // child: Image.network(
+              //   fit: BoxFit.fill,
+              //   imagesList[index].message,
+              // ),
             );
           },
         ),

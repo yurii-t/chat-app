@@ -9,7 +9,9 @@ import 'package:chat_app/domain/usecases/create_chat_usecase.dart';
 import 'package:chat_app/domain/usecases/get_chat_id_usecase.dart';
 import 'package:chat_app/domain/usecases/get_messages_usecase.dart';
 import 'package:chat_app/domain/usecases/get_reference_usecase.dart';
+import 'package:chat_app/domain/usecases/read_messages_usecase.dart';
 import 'package:chat_app/domain/usecases/send_message_usecase.dart';
+import 'package:chat_app/domain/usecases/set_messageid_usecase.dart';
 import 'package:chat_app/domain/usecases/upload_image_usecase.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
@@ -26,6 +28,8 @@ class ChatInteractionBloc
   final CreateChatUseCase createChatUseCase;
   final UploadImageUsecase uploadImageUsecase;
   final GetReferenceUseCase getReferenceUseCase;
+  final ReadMesagesUseCase readMesagesUseCase;
+  final SetMessageIdUsecase setMessageIdUsecase;
   ChatInteractionBloc(
     this.getMessagesUseCase,
     this.sendMessageUseCase,
@@ -34,11 +38,14 @@ class ChatInteractionBloc
     this.createChatUseCase,
     this.uploadImageUsecase,
     this.getReferenceUseCase,
+    this.readMesagesUseCase,
+    this.setMessageIdUsecase,
   ) : super(ChatInteractionInitial()) {
     on<ChatInteractionsCreateChat>(onCreateChat);
     on<ChatInteractionsLoad>(getAllMessages);
     on<ChatInteractionsSendMessage>(sendMessage);
     on<ChatInteractionsUploadImage>(uploadImage);
+    on<ChatInteractionsSeenMessages>(seenMessages);
   }
 
   Future<void> onCreateChat(
@@ -73,7 +80,7 @@ class ChatInteractionBloc
       final chatId = await getChatIdUseCase.call(
         GetChatIdParams(uid: event.senderId, otherUid: event.recipientId),
       );
-
+      final messageId = await setMessageIdUsecase.call(chatId);
       await sendMessageUseCase.call(SendMessageParams(
         messageEntity: MessageEntity(
           senderName: event.senderName,
@@ -82,10 +89,12 @@ class ChatInteractionBloc
           recipientUid: event.recipientId,
           messageType: event.messageType,
           message: event.message,
-          messageId: '',
+          messageId: messageId,
           time: Timestamp.now(),
           docName: '',
           docSize: '',
+          isRead: false,
+          docId: '',
         ),
         chatId: chatId,
       ));
@@ -98,8 +107,9 @@ class ChatInteractionBloc
         recepientUid: event.recipientId,
         recepientPhoneNumber: event.recipientPhoneNumber,
         recentTextMessage: event.message,
-        isRead: true,
+        isRead: false,
         time: Timestamp.now(),
+        newMessages: 0,
       ));
     } on SocketException catch (e) {
       emit(ChatInteractionError(e.toString()));
@@ -113,7 +123,7 @@ class ChatInteractionBloc
         GetChatIdParams(uid: event.senderId, otherUid: event.recipientId),
       );
       final ref = await getReferenceUseCase
-          .call(GetReferenceParams(event.image, chatId));
+          .call(GetReferenceParams(event.image, chatId, 'chats'));
       // final String imageUrl =
       //     await uploadImageUsecase.call(UploadImageParams(event.image, chatId));
       final task =
@@ -122,7 +132,7 @@ class ChatInteractionBloc
           await (await task.whenComplete(() => {print('link compleate')}))
               .ref
               .getDownloadURL();
-
+      final messageId = await setMessageIdUsecase.call(chatId);
       await sendMessageUseCase.call(SendMessageParams(
         messageEntity: MessageEntity(
           senderName: event.senderName,
@@ -131,10 +141,12 @@ class ChatInteractionBloc
           recipientUid: event.recipientId,
           messageType: event.messageType,
           message: imageUrl,
-          messageId: '',
+          messageId: messageId,
           time: Timestamp.now(),
           docName: event.docName,
           docSize: event.docSize,
+          isRead: false,
+          docId: '',
         ),
         chatId: chatId,
       ));
@@ -147,11 +159,19 @@ class ChatInteractionBloc
         recepientUid: event.recipientId,
         recepientPhoneNumber: event.recipientPhoneNumber,
         recentTextMessage: imageUrl,
-        isRead: true,
+        isRead: false,
         time: Timestamp.now(),
+        newMessages: 0,
       ));
     } on SocketException catch (e) {
       emit(ChatInteractionError(e.toString()));
     }
+  }
+
+  Future<void> seenMessages(ChatInteractionsSeenMessages event,
+      Emitter<ChatInteractionState> emit) async {
+    final chatId = await getChatIdUseCase.call(
+        GetChatIdParams(uid: event.senderId, otherUid: event.recipientId));
+    await readMesagesUseCase.call(ReadMesagesParams(chatId, event.recipientId));
   }
 }

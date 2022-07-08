@@ -1,18 +1,34 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:chat_app/domain/entities/message_entity.dart';
 import 'package:chat_app/routes/app_router.gr.dart';
 import 'package:chat_app/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class FilesNavigationPage extends StatelessWidget {
-  const FilesNavigationPage({Key? key}) : super(key: key);
+  final List<MessageEntity> allMessages;
+  final String recipientName;
+  final String recipientPhoto;
+  const FilesNavigationPage({
+    required this.allMessages,
+    required this.recipientName,
+    required this.recipientPhoto,
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final imagesList =
+        allMessages.where((element) => element.messageType == 'image').toList();
+    final filesList = allMessages
+        .where((element) =>
+            element.messageType == 'file' && element.messageId != 'error')
+        .toList();
+
     return AutoTabsRouter.tabBar(
-      routes: const [
-        MediaRoute(),
-        FilesRoute(),
+      routes: [
+        MediaRoute(imagesList: imagesList),
+        FilesRoute(filesList: filesList),
       ],
       builder: (context, child, controller) {
         return Scaffold(
@@ -44,15 +60,18 @@ class FilesNavigationPage extends StatelessWidget {
                     ],
                   ),
                 ),
-                const Text(
-                  'Marren Margo',
-                  style: TextStyle(
+                Text(
+                  recipientName,
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w400,
                     color: Colors.black,
                   ),
                 ),
-                SvgPicture.asset('assets/icons/media.svg'),
+                if (recipientPhoto != '')
+                  Image.network(recipientPhoto)
+                else
+                  SvgPicture.asset('assets/icons/media.svg'),
               ],
             ),
             bottom: TabBar(

@@ -11,7 +11,7 @@ class CreateUser extends CurrentUserEvent {
   // userId;
   // final String userPhone;
   final String userName;
-  final String userImage;
+  final File userImage;
   final String userAddress;
   final String userGender;
   final String userMartialStatus;

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:bloc/bloc.dart';
+import 'package:chat_app/data/models/message_model.dart';
 import 'package:chat_app/domain/entities/chat_entity.dart';
 import 'package:chat_app/domain/entities/message_entity.dart';
 import 'package:chat_app/domain/usecases/add_active_chat_details_usecase.dart';
@@ -10,11 +11,13 @@ import 'package:chat_app/domain/usecases/download_progress_usecase.dart';
 import 'package:chat_app/domain/usecases/get_chat_id_usecase.dart';
 import 'package:chat_app/domain/usecases/get_reference_usecase.dart';
 import 'package:chat_app/domain/usecases/send_message_usecase.dart';
+import 'package:chat_app/domain/usecases/set_messageid_usecase.dart';
 import 'package:chat_app/domain/usecases/upload_image_usecase.dart';
 import 'package:chat_app/domain/usecases/upload_progress_usecase.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/services.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -31,6 +34,7 @@ class FileInteractionBloc
   final GetReferenceUseCase getReferenceUseCase;
   final DownloadFileUseCase downloadFileUseCase;
   final DownloadProgressUseCase downloadProgressUseCase;
+  final SetMessageIdUsecase setMessageIdUsecase;
   FileInteractionBloc(
     this.sendMessageUseCase,
     this.activeChatDetailsUseCase,
@@ -40,12 +44,14 @@ class FileInteractionBloc
     this.getReferenceUseCase,
     this.downloadFileUseCase,
     this.downloadProgressUseCase,
+    this.setMessageIdUsecase,
   ) : super(FileInteractionInitial()) {
     on<FileInteractionUploadFile>(uploadFile);
     // on<FileInteractionUploading>(uploadingProgress);
     on<FileInteractionDownloading>(downloadFile);
   }
 
+  // ignore: long-method
   Future<void> uploadFile(FileInteractionUploadFile event,
       Emitter<FileInteractionState> emit) async {
     try {
@@ -55,7 +61,7 @@ class FileInteractionBloc
       // final String imageUrl =
       //     await uploadImageUsecase.call(UploadImageParams(event.image, chatId));
       final ref = await getReferenceUseCase
-          .call(GetReferenceParams(event.image, chatId));
+          .call(GetReferenceParams(event.image, chatId, 'chats'));
       // final String imageUrl =
       //     await uploadImageUsecase.call(UploadImageParams(event.image, chatId));
       final task =
@@ -67,6 +73,24 @@ class FileInteractionBloc
       //     return FileInteractionProgressUploading(progress);
       //   },
       // );
+      var messageId = await setMessageIdUsecase.call(chatId);
+      await sendMessageUseCase.call(SendMessageParams(
+        messageEntity: MessageEntity(
+          senderName: event.senderName,
+          sederUid: event.senderId,
+          recipientName: event.recipientName,
+          recipientUid: event.recipientId,
+          messageType: event.messageType,
+          message: '',
+          messageId: messageId,
+          time: Timestamp.now(),
+          docName: event.docName,
+          docSize: event.docSize,
+          isRead: false,
+          docId: event.docId,
+        ),
+        chatId: chatId,
+      ));
 
       unawaited(task.then(
         (taskSnapshot) async {
@@ -79,10 +103,12 @@ class FileInteractionBloc
               recipientUid: event.recipientId,
               messageType: event.messageType,
               message: imageUrl,
-              messageId: '',
+              messageId: messageId, //'',
               time: Timestamp.now(),
               docName: event.docName,
               docSize: event.docSize,
+              isRead: false,
+              docId: event.docId,
             ),
             chatId: chatId,
           ));
@@ -95,8 +121,9 @@ class FileInteractionBloc
             recepientUid: event.recipientId,
             recepientPhoneNumber: event.recipientPhoneNumber,
             recentTextMessage: imageUrl,
-            isRead: true,
+            isRead: false,
             time: Timestamp.now(),
+            newMessages: 0,
           ));
         },
       ));
@@ -104,7 +131,30 @@ class FileInteractionBloc
       await emit.forEach(
         uploadProgressUsecase.call(task),
         onData: (double progress) {
-          return FileInteractionProgressUploading(progress);
+          final state = this.state;
+
+          final uploadProgressList = state is FileInteractionProgressUploading
+              ? List<UploadingProgress>.from(state.uploadProgressList)
+              : <UploadingProgress>[];
+
+          final uploadProgressIndex = uploadProgressList.indexWhere(
+            (uploadProgress) => uploadProgress.docId == event.docId,
+          );
+
+          if (uploadProgressIndex == -1) {
+            uploadProgressList.add(UploadingProgress(
+              event.docId,
+              progress,
+            ));
+          } else {
+            uploadProgressList[uploadProgressIndex] = UploadingProgress(
+              event.docId,
+              progress,
+            );
+          }
+
+          return FileInteractionProgressUploading(uploadProgressList);
+          // return FileInteractionProgressUploading(progress);
         },
       );
 
@@ -139,19 +189,65 @@ class FileInteractionBloc
       //   isRead: true,
       //   time: Timestamp.now(),
       // ));
-    } on SocketException catch (e) {
-      emit(FileInteractinonError(e.toString()));
+    }
+    // on PlatformException catch (e) {
+    on FirebaseException catch (e) {
+      final state = this.state;
+
+      final errorList = state is FileInteractinonError
+          ? List<MessageModel>.from(state.errorList)
+          : <MessageModel>[];
+
+      final errorIndex = errorList.indexWhere(
+        (error) => error.docId == event.docId,
+      );
+      // print('EEEE ${errorList.first.docId}');
+      // List<MessageEntity> tmpList = [];
+      var filepath = event.image.path;
+      if (errorIndex == -1) {
+        errorList.add(MessageModel(
+          senderName: event.senderName,
+          sederUid: event.senderId,
+          recipientName: event.recipientName,
+          recipientUid: event.recipientId,
+          messageType: event.messageType, //file error
+          message: filepath,
+          messageId: 'error', //'',
+          time: Timestamp.now(),
+          docName: event.docName,
+          docSize: event.docSize,
+          isRead: false,
+          docId: event.docId,
+        ));
+      } else {
+        //   uploadProgressList[uploadProgressIndex] = UploadingProgress(
+        //     event.docId,
+        //     progress,
+        errorList[errorIndex] = MessageModel(
+          senderName: event.senderName,
+          sederUid: event.senderId,
+          recipientName: event.recipientName,
+          recipientUid: event.recipientId,
+          messageType: event.messageType,
+          message: filepath,
+          messageId: 'error', //'',
+          time: Timestamp.now(),
+          docName: event.docName,
+          docSize: event.docSize,
+          isRead: false,
+          docId: event.docId,
+        );
+      }
+
+      emit(FileInteractinonError(errorList));
+
+      // emit(FileInteractinonError(true));
     }
   }
 
   Future<void> downloadFile(FileInteractionDownloading event,
       Emitter<FileInteractionState> emit) async {
     try {
-      // final testurl =
-      //     'gs://chat-app-d43b4.appspot.com/chats/tqyPM6a0UXJHoZiq1xII/16566755005026049008.pdf';
-      // final testurl =
-      //     'gs://chat-app-d43b4.appspot.com/chats/tqyPM6a0UXJHoZiq1xII/16566737392836129472.pdf';
-      // final tempDir = await getTemporaryDirectory();
       final tempDir = await getApplicationDocumentsDirectory();
       final path = '${tempDir.path}/${event.url}';
       final file = File(path);
@@ -168,33 +264,50 @@ class FileInteractionBloc
         await emit.forEach(
           downloadProgressUseCase.call(downloadProgress),
           onData: (double dowProgress) {
-            return FileInteractionProgressDownloading(dowProgress);
+            final state = this.state;
+
+            final progressList = state is FileInteractionProgressDownloading
+                ? List<DownloadingProgress>.from(state.progressList)
+                : <DownloadingProgress>[];
+
+            final progressIndex = progressList.indexWhere(
+              (downloadProgress) => downloadProgress.id == event.messageId,
+            );
+            if (progressIndex == -1) {
+              progressList.add(DownloadingProgress(
+                event.messageId,
+                dowProgress,
+              ));
+            } else {
+              progressList[progressIndex] = DownloadingProgress(
+                event.messageId,
+                dowProgress,
+              );
+            }
+
+            return FileInteractionProgressDownloading(progressList);
           },
-        );
+          // onError: () =>
+        ).whenComplete(() {
+          final state = this.state;
+          final progressList = state is FileInteractionProgressDownloading
+              ? List<DownloadingProgress>.from(state.progressList)
+              : <DownloadingProgress>[];
+          print('Pered $progressList');
+          final progressIndex = progressList.indexWhere(
+              (downloadProgress) => downloadProgress.id == event.messageId);
+
+          if (progressIndex == -1) {
+            return;
+          } else {
+            progressList.removeWhere((element) => element.progress >= 1);
+            print('Pisl $progressList');
+          }
+        });
       }
     } on SocketException catch (e) {
-      emit(FileInteractinonError(e.toString()));
+      bool error = true;
+      // emit(FileInteractinonError(error));
     }
   }
-
-  // void uploadingProgress(FileInteractionUploading event,
-  //     Emitter<FileInteractionState> emit) async {
-  //   final chatId = await getChatIdUseCase.call(
-  //     GetChatIdParams(uid: event.senderId, otherUid: event.recipientId),
-  //   );
-  //   final ref =
-  //       await getReferenceUseCase.call(GetReferenceParams(event.image, chatId));
-  //   // final String imageUrl =
-  //   //     await uploadImageUsecase.call(UploadImageParams(event.image, chatId));
-  //   final task =
-  //       await uploadImageUsecase.call(UploadImageParams(event.image, ref));
-  //   var tmp = 0.0;
-
-  //   await emit.forEach(
-  //     uploadProgressUsecase.call(task),
-  //     onData: (double progress) {
-  //       return FileInteractionProgressUploading(progress);
-  //     },
-  //   );
-  // }
 }

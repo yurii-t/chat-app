@@ -13,6 +13,8 @@ class MessageModel extends MessageEntity {
     required super.time,
     required super.docSize,
     required super.docName,
+    required super.isRead,
+    required super.docId,
   });
 
   factory MessageModel.fromSnapShot(DocumentSnapshot snap) {
@@ -27,6 +29,8 @@ class MessageModel extends MessageEntity {
       time: snap['time'] as Timestamp,
       docSize: snap['docSize'] as String,
       docName: snap['docName'] as String,
+      isRead: snap['isRead'] as bool,
+      docId: snap['docId'] as String,
     );
   }
 
@@ -42,6 +46,8 @@ class MessageModel extends MessageEntity {
       'time': time,
       'docSize': docSize,
       'docName': docName,
+      'isRead': isRead,
+      'docId': docId,
     };
   }
 }

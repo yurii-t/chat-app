@@ -1,12 +1,15 @@
 import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
+import 'package:chat_app/data/models/message_model.dart';
+import 'package:chat_app/domain/entities/message_entity.dart';
 import 'package:chat_app/presentation/bloc/chat/bloc/chat_interaction_bloc.dart';
 import 'package:chat_app/presentation/bloc/file_interaction/bloc/file_interaction_bloc.dart';
 import 'package:chat_app/presentation/pages/chat/widgets/message_bubble.dart';
 import 'package:chat_app/presentation/widgets/custom_appbar.dart';
 import 'package:chat_app/routes/app_router.gr.dart';
 import 'package:chat_app/theme/app_colors.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:file_picker/file_picker.dart';
@@ -26,6 +29,8 @@ class ChatPage extends StatefulWidget {
   final String recipientName;
   final String recipientPhoneNumber;
   final String senderPhoneNumber;
+  final String recipientImage;
+
   const ChatPage({
     required this.senderUid,
     required this.recipientUid,
@@ -33,6 +38,7 @@ class ChatPage extends StatefulWidget {
     required this.recipientName,
     required this.recipientPhoneNumber,
     required this.senderPhoneNumber,
+    required this.recipientImage,
     Key? key,
   }) : super(key: key);
 
@@ -40,15 +46,9 @@ class ChatPage extends StatefulWidget {
   State<ChatPage> createState() => _ChatPageState();
 }
 
-class DownloadingProgress {
-  final String id;
-  final double progress;
-
-  DownloadingProgress(this.id, this.progress);
-}
-
 class _ChatPageState extends State<ChatPage> {
   TextEditingController _textController = TextEditingController();
+  ScrollController scrollController = ScrollController();
   final ImagePicker _picker = ImagePicker();
   File? image;
   String? imageName;
@@ -58,15 +58,25 @@ class _ChatPageState extends State<ChatPage> {
   List<DownloadingProgress> progresses = [];
   double dowProgress = 0;
   String progressString = '';
+  double updateProgress = 0;
+  String updateProgressString = '';
   bool fileDownloaded = false;
   bool downloading = false;
   String? downloadedPath;
+  bool uploadError = false;
 
   @override
   void initState() {
     context
         .read<ChatInteractionBloc>()
         .add(ChatInteractionsLoad(widget.senderUid, widget.recipientUid));
+
+    // context.read<ChatInteractionBloc>().add(
+    //     ChatInteractionsSeenMessages(widget.senderUid, widget.recipientUid));
+
+    // if (scrollController.hasClients)
+    //   scrollController.animateTo(0,
+    //       duration: const Duration(milliseconds: 300), curve: Curves.linear);
     super.initState();
 
     _textController.addListener(() {
@@ -84,38 +94,6 @@ class _ChatPageState extends State<ChatPage> {
       print('Failed to pick file: $e');
     }
   }
-
-  // Future downloadFile(String url) async {
-  //   final tempDir = await getTemporaryDirectory();
-  //   final path = '${tempDir.path}/${url}';
-  //   // final Directory appDocDir = await getApplicationDocumentsDirectory();
-  //   // final path = '${appDocDir.path}/${url}';
-  //   downloadedPath = path;
-  //   print('PATH $path');
-  //   File(path).exists();
-
-  //   try {
-  //     await Dio().download(url, path, onReceiveProgress: (recived, total) {
-  //       double progress = recived / total;
-  //       setState(() {
-  //         dowProgress = progress;
-  //         if (progress >= 1) {
-  //           fileDownloaded = true;
-  //           downloading = false;
-  //         } else {
-  //           progressString =
-  //               '${(progress * 100).toStringAsFixed(0)}% downloaded';
-  //           downloading = true;
-  //         }
-  //         //        final kb = file.size / 1024;
-  //         // final mb = kb / 1024;
-  //         // final size  = (mb>=1)?'${mb.toStringAsFixed(2)} MB' : '${kb.toStringAsFixed(2)} KB';
-  //       });
-  //     });
-  //   } on DioError catch (e) {
-  //     print(e.message);
-  //   }
-  // }
 
   // void openFile(PlatformFile? file) {
   //   OpenFile.open(file?.path);
@@ -162,6 +140,7 @@ class _ChatPageState extends State<ChatPage> {
     _textController
       ..removeListener(() {})
       ..dispose();
+    scrollController.dispose();
     super.dispose();
   }
 
@@ -169,16 +148,32 @@ class _ChatPageState extends State<ChatPage> {
   Widget build(BuildContext context) {
     return BlocBuilder<ChatInteractionBloc, ChatInteractionState>(
       builder: (context, state) {
+        // context.read<ChatInteractionBloc>().add(ChatInteractionsSeenMessages(
+        //     widget.senderUid, widget.recipientUid));
+        context.read<ChatInteractionBloc>().add(ChatInteractionsSeenMessages(
+            widget.senderUid, widget.recipientUid));
         if (state is ChatInteractionLoading) {
-          return const Center(
-            child: SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(),
+          return const Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(),
+              ),
             ),
           );
         }
         if (state is ChatInteractionLoaded) {
+          final errorList =
+              context.select<FileInteractionBloc, List<MessageModel>>(
+            (bloc) {
+              final state = bloc.state;
+
+              return state is FileInteractinonError ? state.errorList : [];
+            },
+          );
+          final messages = [...state.messages, ...errorList];
+
           return Scaffold(
             appBar: CustomAppBar(
               widgetleft: GestureDetector(
@@ -202,26 +197,31 @@ class _ChatPageState extends State<ChatPage> {
                 ),
               ),
               widgetCenter: GestureDetector(
-                onTap: () => context.router.push(ProfileRoute()),
-                child: const Text(
-                  'Marren Margo',
-                  style: TextStyle(
+                onTap: () => context.router.push(ProfileRoute(
+                    userid: widget.recipientUid, allMessages: messages)),
+                child: Text(
+                  '${widget.recipientName}',
+                  // 'Marren Margo',
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w400,
                     color: Colors.black,
                   ),
                 ),
               ),
-              widgetRight: GestureDetector(
-                  onTap: () => context.router.push(ProfileRoute()),
-                  child: SvgPicture.asset('assets/icons/media.svg')),
+              widgetRight: CircleAvatar(
+                radius: 15,
+                child: widget.recipientImage != ''
+                    ? Image.network(widget.recipientImage)
+                    : SvgPicture.asset('assets/icons/media.svg'),
+              ),
             ),
             body: Padding(
               padding: const EdgeInsets.only(left: 16, right: 16, bottom: 30),
               child: Column(
                 children: [
                   Expanded(
-                    child: state.messages.isEmpty
+                    child: messages.isEmpty
                         ? const Center(
                             child: const Text(
                               'No message here yet.',
@@ -234,14 +234,20 @@ class _ChatPageState extends State<ChatPage> {
                             ),
                           )
                         : ListView.builder(
-                            itemCount: state.messages.length,
+                            reverse: true,
+                            // controller: scrollController,
+                            itemCount: messages.length,
                             itemBuilder: (context, index) {
-                              final messagesData = state.messages[index];
+                              final messageRevers = messages.reversed.toList();
+                              print(messageRevers.last);
+                              final messagesData = messageRevers[index];
                               final bool sender =
                                   widget.senderUid == messagesData.sederUid;
 
                               if (messagesData.messageType == 'image') {
                                 return MessageBubble(
+                                  seen: messagesData.isRead,
+                                  error: false,
                                   type: sender
                                       ? MessageBubbleType.sendImage
                                       : MessageBubbleType.reciveImage,
@@ -253,69 +259,269 @@ class _ChatPageState extends State<ChatPage> {
                                 return GestureDetector(
                                   onTap: () {
                                     if (!sender) {
-                                      context.read<FileInteractionBloc>().add(
-                                          FileInteractionDownloading(
-                                              messagesData.message));
+                                      context
+                                          .read<FileInteractionBloc>()
+                                          .add(FileInteractionDownloading(
+                                            messagesData.messageId,
+                                            messagesData.message,
+                                          ));
                                     } else
                                       openFile(downloadedPath);
-
-                                    // (!sender && fileDownloaded == false)
-                                    //     ? downloadFile(messagesData.message)
-                                    //     : openFile(downloadedPath ?? '');
-                                    // fileDownloaded == true
-                                    //     ? openFile(downloadedPath ?? '')
-                                    //     : null;
-                                    // openFile(pickedFile!);
                                   },
-                                  // child: BlocListener<FileInteractionBloc,
-                                  //     FileInteractionState>(
-                                  //   listener: (context, state) {
-                                  //     if (state
-                                  //         is FileInteractionProgressDownloading) {
-                                  //       progressString =
-                                  //           state.downloadProgress.toString();
-                                  //       dowProgress =
-                                  //           state.downloadProgress.toDouble();
-                                  //     }
-                                  //   },
-                                  // return
                                   child: BlocBuilder<FileInteractionBloc,
                                       FileInteractionState>(
                                     builder: (context, state) {
+                                      if (state is FileInteractinonError &&
+                                          state.errorList
+                                              .contains(messagesData)) {
+                                        int idx = messageRevers.length;
+                                        var lastel = messageRevers.last;
+                                        // if (index == idx) {
+                                        // }
+                                        print(
+                                            'FIIRSt${messageRevers.first.messageId},//${messageRevers.first.message} ||| LAST${messageRevers.last.messageId},//${messageRevers.last.message} ');
+
+                                        final errorIndex = state.errorList
+                                            .indexWhere((element) =>
+                                                element.docId ==
+                                                messagesData.docId);
+
+                                        final errorMes = errorIndex != -1
+                                            ? state.errorList[errorIndex]
+                                            : state.errorList.last;
+
+                                        // final errorMesageData =
+                                        //     // state.errorList[errorIndex];
+                                        //     state.errorList.first;
+                                        // if (messagesData.docId ==
+                                        //     errorMes.docId) {
+                                        return GestureDetector(
+                                          onTap: () {
+                                            showModalBottomSheet<Widget?>(
+                                              useRootNavigator: true,
+                                              shape:
+                                                  const RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.vertical(
+                                                  top: Radius.circular(24),
+                                                ),
+                                              ),
+                                              context: context,
+                                              builder: (context) {
+                                                return Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                    left: 16,
+                                                    // right: 16,
+                                                    top: 35,
+                                                    bottom: 50,
+                                                  ),
+                                                  child: Column(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      GestureDetector(
+                                                        onTap: () {
+                                                          var resendfile = File(
+                                                              pickedFile
+                                                                      ?.path ??
+                                                                  '');
+                                                          if (resendfile !=
+                                                              null) {
+                                                            context
+                                                                .read<
+                                                                    FileInteractionBloc>()
+                                                                .add(
+                                                                  FileInteractionUploadFile(
+                                                                    // File(pickedFile?.path ?? ''),
+
+                                                                    resendfile,
+                                                                    widget
+                                                                        .senderUid,
+                                                                    widget
+                                                                        .senderName,
+                                                                    widget
+                                                                        .senderPhoneNumber,
+                                                                    widget
+                                                                        .recipientUid,
+                                                                    widget
+                                                                        .recipientName,
+                                                                    widget
+                                                                        .recipientPhoneNumber,
+                                                                    '',
+                                                                    'file',
+                                                                    errorMes
+                                                                        .docSize,
+                                                                    // pickedFile?.size.toDouble() ??
+                                                                    //     0,
+                                                                    // pickedFile?.name ??
+                                                                    //     'document name loading,..',
+                                                                    errorMes
+                                                                        .docName,
+                                                                    // '$pkfile/${Timestamp.now()}',
+                                                                    errorMes
+                                                                        .docId,
+                                                                  ),
+                                                                );
+                                                          }
+
+                                                          return;
+                                                        },
+                                                        child: Row(
+                                                          children: [
+                                                            SvgPicture.asset(
+                                                                'assets/icons/resend.svg'),
+                                                            const SizedBox(
+                                                              width: 10,
+                                                            ),
+                                                            const Text(
+                                                              'Resend',
+                                                              style: TextStyle(
+                                                                color: Colors
+                                                                    .black,
+                                                                fontSize: 15,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w600,
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      const SizedBox(
+                                                        height: 26,
+                                                      ),
+                                                      GestureDetector(
+                                                        onTap: () {
+                                                          setState(() {
+                                                            state.errorList
+                                                                .remove(
+                                                                    errorMes);
+                                                          });
+                                                          // state.errorList
+                                                          //     .remove(errorMes);
+                                                          print('tap');
+                                                        },
+                                                        child: Row(
+                                                          children: [
+                                                            SvgPicture.asset(
+                                                                'assets/icons/delete.svg'),
+                                                            const SizedBox(
+                                                              width: 12,
+                                                            ),
+                                                            const Text(
+                                                              'Delete',
+                                                              style: TextStyle(
+                                                                color: Colors
+                                                                    .black,
+                                                                fontSize: 15,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w600,
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                );
+                                              },
+                                            );
+                                          },
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.end,
+                                            children: [
+                                              MessageBubble(
+                                                  docSize:
+                                                      // messagesData.docSize,
+                                                      errorMes.docSize,
+                                                  text: errorMes.docName,
+                                                  type: MessageBubbleType
+                                                      .sendDocError,
+                                                  time: DateFormat('hh:mm a')
+                                                      .format(errorMes.time
+                                                          .toDate()),
+                                                  error: uploadError,
+                                                  seen: false),
+                                              const SizedBox(
+                                                height: 5,
+                                              ),
+                                              SvgPicture.asset(
+                                                  'assets/icons/error.svg'),
+                                            ],
+                                          ),
+                                        );
+
+                                        // }
+                                      }
                                       if (state
                                           is FileInteractionProgressDownloading) {
-                                        dowProgress =
-                                            state.downloadProgress.toDouble();
-                                        progressString =
-                                            '${(state.downloadProgress * 100).toStringAsFixed(0)}% downloaded';
-                                        // return MessageBubble(
-                                        //   downloaded: false, // fileDownloaded,
-                                        //   docSize: messagesData.docSize
-                                        //       .toString(), //pickedFile?.size.toString(),
-                                        //   downloading: true, //downloading,
-                                        //   downloadString:
-                                        //       // state.downloadProgress
-                                        //       //     .toString(),
-                                        //       progressString,
-                                        //   downloadValue:
+                                        final downloadIndex = state.progressList
+                                            .indexWhere((progressId) =>
+                                                progressId.id ==
+                                                messagesData.messageId);
 
-                                        //       // state.downloadProgress,
-                                        //       dowProgress,
-                                        //   type: sender
-                                        //       ? MessageBubbleType.sendDoc
-                                        //       : MessageBubbleType.reciveDoc,
-                                        //   text: messagesData
-                                        //       .docName, // messagesData.message,
-                                        //   time: DateFormat('hh:mm a').format(
-                                        //       messagesData.time.toDate()),
-                                        // );
+                                        final progress = downloadIndex != -1
+                                            ? state.progressList[downloadIndex]
+                                                .progress
+                                            : 0;
+                                        dowProgress = progress.toDouble();
+                                        progressString =
+                                            '${(dowProgress * 100).toStringAsFixed(0)}% downloaded';
+                                      }
+                                      if (state
+                                          is FileInteractionProgressUploading) {
+                                        final uploadIndex =
+                                            state.uploadProgressList.indexWhere(
+                                          (progressDocId) =>
+                                              progressDocId.docId ==
+                                              messagesData.docId,
+                                          // File(pickedFile?.path ?? ''),
+                                        );
+
+                                        final uploadProgress = uploadIndex != -1
+                                            ? state
+                                                .uploadProgressList[uploadIndex]
+                                                .uploadProgress
+                                            : 0;
+                                        updateProgress =
+                                            // state.progress.toDouble();
+                                            uploadProgress.toDouble();
+                                        updateProgressString =
+                                            '${(updateProgress * 100).toStringAsFixed(0)}% uploaded';
+
+                                        return MessageBubble(
+                                          seen: messagesData.isRead,
+                                          error: uploadError,
+                                          uploadValue: updateProgress,
+                                          uploadString: updateProgressString,
+                                          docSize: messagesData.docSize
+                                              .toString(), //pickedFile?.size.toString(),
+
+                                          type: sender
+                                              ? MessageBubbleType.sendDoc
+                                              : MessageBubbleType.reciveDoc,
+                                          text: messagesData
+                                              .docName, // messagesData.message,
+                                          time: DateFormat('hh:mm a').format(
+                                              messagesData.time.toDate()),
+                                        );
                                       }
 
                                       return MessageBubble(
-                                        downloaded: false, // fileDownloaded,
+                                        seen: messagesData.isRead,
+                                        error: false,
+                                        // uploadValue: updateProgress,
+                                        // uploadString: updateProgressString,
                                         docSize: messagesData.docSize
                                             .toString(), //pickedFile?.size.toString(),
-                                        downloading: true, //downloading,
+
                                         downloadString:
                                             // state.downloadProgress
                                             //     .toString(),
@@ -336,8 +542,20 @@ class _ChatPageState extends State<ChatPage> {
                                   ),
                                 );
                               }
+                              // else if (messagesData.message == 'error') {
+                              //   return MessageBubble(
+                              //     seen: messagesData.isRead,
+                              //     error: false,
+                              //     type: MessageBubbleType.sendDocError,
+                              //     text: messagesData.docName,
+                              //     time: DateFormat('hh:mm a')
+                              //         .format(messagesData.time.toDate()),
+                              //   );
+                              // }
 
                               return MessageBubble(
+                                seen: messagesData.isRead,
+                                error: false,
                                 type: sender
                                     ? MessageBubbleType.sendMessage
                                     : MessageBubbleType.reciveMessage,
@@ -433,56 +651,72 @@ class _ChatPageState extends State<ChatPage> {
                                     const SizedBox(
                                       height: 26,
                                     ),
-                                    BlocBuilder<FileInteractionBloc,
-                                        FileInteractionState>(
-                                      builder: (context, state) {
-                                        return state
-                                                is FileInteractionProgressUploading
-                                            ? Column(
-                                                children: [
-                                                  CircularProgressIndicator(
-                                                    value: state.progress
-                                                        .toDouble(),
-                                                  ),
-                                                  Text(
-                                                      '${(state.progress * 100).toStringAsFixed(0)}% uploaded'),
-                                                ],
-                                              )
-                                            //'${(progress * 100).toStringAsFixed(0)}% downloaded';
-                                            : Text('no progress');
-                                      },
-                                    ),
+                                    // BlocBuilder<FileInteractionBloc,
+                                    //     FileInteractionState>(
+                                    //   builder: (context, state) {
+                                    //     return state
+                                    //             is FileInteractionProgressUploading
+                                    //         ? Column(
+                                    //             children: [
+                                    //               CircularProgressIndicator(
+                                    //                 value: state.progress
+                                    //                     .toDouble(),
+                                    //               ),
+                                    //               Text(
+                                    //                   '${(state.progress * 100).toStringAsFixed(0)}% uploaded'),
+                                    //             ],
+                                    //           )
+                                    //         //'${(progress * 100).toStringAsFixed(0)}% downloaded';
+                                    //         : Text('no progress');
+                                    //   },
+                                    // ),
                                     GestureDetector(
                                       onTap: () {
-                                        final double kb =
-                                            (pickedFile?.size ?? 0) / 1024;
-                                        final double mb = kb / 1024;
-                                        final String size = (mb >= 1)
-                                            ? '${mb.toStringAsFixed(2)} MB'
-                                            : '${kb.toStringAsFixed(2)} KB';
-                                        print('File ${pickedFile?.size}');
-                                        print('SIZE $size');
+                                        // final double kb =
+                                        //     (pickedFile?.size) / 1024;
+                                        // final double mb = kb / 1024;
+                                        // final String size = (mb >= 1)
+                                        //     ? '${mb.toStringAsFixed(2)} MB'
+                                        //     : '${kb.toStringAsFixed(2)} KB';
+                                        // print('File ${pickedFile?.size}');
+                                        // print('SIZE $size');
                                         pickFile().whenComplete(() {
-                                          context
-                                              .read<FileInteractionBloc>()
-                                              .add(
-                                                FileInteractionUploadFile(
-                                                  File(pickedFile?.path ?? ''),
-                                                  widget.senderUid,
-                                                  widget.senderName,
-                                                  widget.senderPhoneNumber,
-                                                  widget.recipientUid,
-                                                  widget.recipientName,
-                                                  widget.recipientPhoneNumber,
-                                                  '',
-                                                  'file',
-                                                  size,
-                                                  // pickedFile?.size.toDouble() ??
-                                                  //     0,
-                                                  pickedFile?.name ??
-                                                      'document name loading,..',
-                                                ),
-                                              );
+                                          final double kb =
+                                              (pickedFile!.size) / 1024;
+                                          final double mb = kb / 1024;
+                                          final String size = (mb >= 1)
+                                              ? '${mb.toStringAsFixed(2)} MB'
+                                              : '${kb.toStringAsFixed(2)} KB';
+                                          print(
+                                              'PATHHH ${File(pickedFile?.path ?? '')}');
+                                          var pkfile =
+                                              File(pickedFile?.path ?? '');
+                                          if (pkfile != null) {
+                                            context
+                                                .read<FileInteractionBloc>()
+                                                .add(
+                                                  FileInteractionUploadFile(
+                                                    // File(pickedFile?.path ?? ''),
+                                                    pkfile,
+                                                    widget.senderUid,
+                                                    widget.senderName,
+                                                    widget.senderPhoneNumber,
+                                                    widget.recipientUid,
+                                                    widget.recipientName,
+                                                    widget.recipientPhoneNumber,
+                                                    '',
+                                                    'file',
+                                                    size,
+                                                    // pickedFile?.size.toDouble() ??
+                                                    //     0,
+                                                    pickedFile?.name ??
+                                                        'document name loading,..',
+                                                    '$pkfile/${Timestamp.now()}',
+                                                  ),
+                                                );
+                                          }
+
+                                          return;
                                           // context
                                           //     .read<FileInteractionBloc>()
                                           //     .add(FileInteractionUploading(
@@ -514,6 +748,7 @@ class _ChatPageState extends State<ChatPage> {
 
                                         var tmp = File(pickedFile?.path ?? '');
                                         print('PATh $tmp');
+                                        // context.router.pop();
                                       },
                                       child: Row(
                                         children: [

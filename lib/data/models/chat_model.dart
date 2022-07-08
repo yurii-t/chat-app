@@ -13,6 +13,7 @@ class ChatModel extends ChatEntity {
     required super.recentTextMessage,
     required super.isRead,
     required super.time,
+    required super.newMessages,
   });
 
   factory ChatModel.fromSnapShot(DocumentSnapshot snap) {
@@ -27,6 +28,7 @@ class ChatModel extends ChatEntity {
       recentTextMessage: snap['recentTextMessage'] as String,
       isRead: snap['isRead'] as bool,
       time: snap['time'] as Timestamp,
+      newMessages: snap['newMessages'] as int,
     );
   }
   Map<String, Object> toDocument() {
@@ -41,6 +43,7 @@ class ChatModel extends ChatEntity {
       'recentTextMessage': recentTextMessage,
       'isRead': isRead,
       'time': time,
+      'newMessages': newMessages,
     };
   }
 }

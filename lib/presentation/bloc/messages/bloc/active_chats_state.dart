@@ -28,3 +28,19 @@ class ActiveChatsError extends ActiveChatsState {
   @override
   List<Object> get props => [error];
 }
+
+class ActiveChatMessageCount extends ActiveChatsState {
+  final List<MessageCount> messagesCount;
+
+  const ActiveChatMessageCount(this.messagesCount);
+
+  @override
+  List<Object> get props => [messagesCount];
+}
+
+class MessageCount {
+  final String chatId;
+  final int messageCount;
+
+  MessageCount(this.chatId, this.messageCount);
+}

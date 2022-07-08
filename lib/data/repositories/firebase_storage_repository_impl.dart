@@ -24,9 +24,10 @@ class FirebaseStorageRepositoryImpl implements FirebaseStorageRepository {
   }
 
   @override
-  Future<Reference> getReference(File file, String chatId) async {
-    return _firebaseStorageRemoteDataSource.getReference(file, chatId);
-  }
+  // Future<Reference> getReference(File file, String chatId) async {
+  Future<Reference> getReference(
+          File file, String chatId, String folder) async =>
+      _firebaseStorageRemoteDataSource.getReference(file, chatId, folder);
 
   @override
   Future<DownloadTask> downloadFile(String url, File file) async {

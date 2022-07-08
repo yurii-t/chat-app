@@ -1,12 +1,16 @@
+import 'dart:async';
+
 import 'package:chat_app/data/datasource/firebase/firebase_remote_datasource.dart';
 import 'package:chat_app/data/models/chat_model.dart';
 import 'package:chat_app/data/models/message_model.dart';
 import 'package:chat_app/data/models/user_model.dart';
 import 'package:chat_app/domain/entities/chat_entity.dart';
+import 'package:chat_app/domain/entities/message_count_entity.dart';
 import 'package:chat_app/domain/entities/message_entity.dart';
 import 'package:chat_app/domain/entities/user_entity.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
 
 class FirebaseRemoteDataSourceImpl implements FirebaseRemoteDataSource {
   FirebaseAuth auth = FirebaseAuth.instance;
@@ -118,32 +122,105 @@ class FirebaseRemoteDataSourceImpl implements FirebaseRemoteDataSource {
           .collection('activeChats')
           .doc(uid)
           .set(_chatIdMap);
-// TODO(yura):check return,
+
       return;
     });
   }
 
   @override
+  // Future<String> sendMessage(MessageEntity messageEntity, String chatId) async {
   Future<void> sendMessage(MessageEntity messageEntity, String chatId) async {
+    // final messageCollectionRef = _firebaseFirestore
+    //     .collection('chats')
+    //     .doc(chatId)
+    //     .collection('messages');
+
+    // final String _messageId = messageCollectionRef.doc().id;
+    // await userCollection.doc(uid).get().then((userDoc) {
+    // final messgeDoc = await messageCollectionRef.doc(_messageId).get();
+
+    // final newMessage = MessageModel(
+    //   senderName: messageEntity.senderName,
+    //   sederUid: messageEntity.sederUid,
+    //   recipientName: messageEntity.recipientName,
+    //   recipientUid: messageEntity.recipientUid,
+    //   messageType: messageEntity.messageType,
+    //   message: messageEntity.message,
+    //   messageId: _messageId,
+    //   time: messageEntity.time,
+    //   docSize: messageEntity.docSize,
+    //   docName: messageEntity.docName,
+    //   isRead: messageEntity.isRead,
+    // ).toDocument();
+    // if (!messgeDoc.exists) {
+    //   unawaited(messageCollectionRef.doc(_messageId).set(newMessage));
+    // } else {
+    //   unawaited(messageCollectionRef.doc(_messageId).update(newMessage));
+    // }
+    // try {
+    final messageCollectionRef = _firebaseFirestore
+        .collection('chats')
+        .doc(chatId)
+        .collection('messages');
+
+    await messageCollectionRef
+        .doc(messageEntity.messageId)
+        .get()
+        .then((messgeDoc) {
+      final newMessage = MessageModel(
+        senderName: messageEntity.senderName,
+        sederUid: messageEntity.sederUid,
+        recipientName: messageEntity.recipientName,
+        recipientUid: messageEntity.recipientUid,
+        messageType: messageEntity.messageType,
+        message: messageEntity.message,
+        messageId: messageEntity.messageId,
+        time: messageEntity.time,
+        docSize: messageEntity.docSize,
+        docName: messageEntity.docName,
+        isRead: messageEntity.isRead,
+        docId: messageEntity.docId,
+      ).toDocument();
+      if (!messgeDoc.exists) {
+        messageCollectionRef.doc(messageEntity.messageId).set(newMessage);
+      } else {
+        messageCollectionRef.doc(messageEntity.messageId).update(newMessage);
+      }
+    });
+    // } on PlatformException catch (e) {
+    //   print('Platform error ${e.message}');
+    // } on FirebaseException catch (e) {
+    //   print('Firebase error $e');
+    // }
+
+    // return _messageId;
+  }
+
+  @override
+  Future<String> setMessageId(String chatId) async {
     final messageCollectionRef = _firebaseFirestore
         .collection('chats')
         .doc(chatId)
         .collection('messages');
 
     final String _messageId = messageCollectionRef.doc().id;
-    final newMessage = MessageModel(
-      senderName: messageEntity.senderName,
-      sederUid: messageEntity.sederUid,
-      recipientName: messageEntity.recipientName,
-      recipientUid: messageEntity.recipientUid,
-      messageType: messageEntity.messageType,
-      message: messageEntity.message,
-      messageId: _messageId,
-      time: messageEntity.time,
-      docSize: messageEntity.docSize,
-      docName: messageEntity.docName,
-    ).toDocument();
-    await messageCollectionRef.doc(_messageId).set(newMessage);
+
+    return _messageId;
+  }
+
+  @override
+  Future<void> readMessages(String chatId, String sederUID) async {
+    final messageCollectionRef = _firebaseFirestore
+        .collection('chats')
+        .doc(chatId)
+        .collection('messages')
+        .where('sederUID', isEqualTo: sederUID)
+        .where('isRead', isEqualTo: false);
+
+    await messageCollectionRef.get()
+      ..docs.forEach((element) {
+        element.reference.update({'isRead': true});
+      });
   }
 
   @override
@@ -170,6 +247,7 @@ class FirebaseRemoteDataSourceImpl implements FirebaseRemoteDataSource {
       recentTextMessage: chatEntity.recentTextMessage,
       isRead: chatEntity.isRead,
       time: chatEntity.time,
+      newMessages: chatEntity.newMessages,
     ).toDocument();
 
     final otherNewChat = ChatModel(
@@ -183,6 +261,7 @@ class FirebaseRemoteDataSourceImpl implements FirebaseRemoteDataSource {
       recentTextMessage: chatEntity.recentTextMessage,
       isRead: chatEntity.isRead,
       time: chatEntity.time,
+      newMessages: chatEntity.newMessages,
     ).toDocument();
 
     await myChatDetailsCollectionRef
@@ -236,6 +315,36 @@ class FirebaseRemoteDataSourceImpl implements FirebaseRemoteDataSource {
   }
 
   @override
+  Future<void> getNewMessages(String chatId, String recepientUid) async {
+    final String? uid = auth.currentUser?.uid;
+    final chatCollectionRef = _firebaseFirestore
+        .collection('chats')
+        .doc(chatId)
+        .collection('messages');
+
+    final snap = await chatCollectionRef
+        .where('sederUID', isNotEqualTo: uid)
+        .where('isRead', isEqualTo: false)
+        .get()
+      ..docs;
+    final size = snap.size;
+
+    final otherChatDetailsCollectionRef = await _firebaseFirestore
+        .collection('users')
+        .doc(uid)
+        .collection('myChat')
+        .doc(recepientUid);
+    final messageDoc = await otherChatDetailsCollectionRef.get();
+
+    if (messageDoc.exists) {
+      // await messageDoc.reference.update({'newMessages': length});
+      await otherChatDetailsCollectionRef.update({'newMessages': size});
+    } else {
+      return;
+    }
+  }
+
+  @override
   Future<String> getChatId(String uid, String otherUid) async {
     final userCollectionRef = _firebaseFirestore.collection('users');
 
@@ -249,7 +358,7 @@ class FirebaseRemoteDataSourceImpl implements FirebaseRemoteDataSource {
         return chatId.data()!['chatId'] as String;
       }
 
-      return Future.value('nema id');
+      return Future.value('');
     });
   }
 }

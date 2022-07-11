@@ -15,12 +15,6 @@ class UploadImageUsecase implements UseCase<UploadTask, UploadImageParams> {
   }
 }
 
-// class UploadImageParams {
-//   final File image;
-//   final String chatid;
-
-//   UploadImageParams(this.image, this.chatid);
-// }
 class UploadImageParams {
   final File image;
   final Reference ref;

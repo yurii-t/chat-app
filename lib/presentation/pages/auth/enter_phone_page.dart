@@ -3,7 +3,7 @@ import 'package:chat_app/presentation/bloc/auth/bloc/phone_auth_bloc.dart';
 
 import 'package:chat_app/routes/app_router.gr.dart';
 import 'package:chat_app/theme/app_colors.dart';
-import 'package:easy_localization/easy_localization.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
@@ -39,17 +39,7 @@ class _EnterPhonePageState extends State<EnterPhonePage> {
           return state is PhoneAuthLoading;
         },
         builder: (context, showLoading) {
-          return
-              //  showLoading
-              //   ? const Center(
-              //       child: SizedBox(
-              //         width: 24,
-              //         height: 24,
-              //         child: CircularProgressIndicator(),
-              //       ),
-              //     )
-              //   :
-              Container(
+          return Container(
             padding: const EdgeInsets.only(left: 36, right: 36, top: 136),
             width: MediaQuery.of(context).size.width,
             height: MediaQuery.of(context).size.height,
@@ -71,7 +61,6 @@ class _EnterPhonePageState extends State<EnterPhonePage> {
                 const SizedBox(
                   height: 32,
                 ),
-                // TextField(),
                 InternationalPhoneNumberInput(
                   onInputChanged: (number) {
                     print(number.phoneNumber);
@@ -79,7 +68,7 @@ class _EnterPhonePageState extends State<EnterPhonePage> {
                     print('TESTTTT$phoneNumber');
                   },
                   textAlignVertical: TextAlignVertical.center, //top,
-                  // scrollPadding: EdgeInsets.zero,
+
                   selectorConfig: const SelectorConfig(
                     selectorType: PhoneInputSelectorType.BOTTOM_SHEET,
                     setSelectorButtonAsPrefixIcon: true,
@@ -94,19 +83,15 @@ class _EnterPhonePageState extends State<EnterPhonePage> {
                   ignoreBlank: true,
                   autoValidateMode: AutovalidateMode.disabled,
                   selectorTextStyle: const TextStyle(
-                      color: Colors.black,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w400
-                      // textBaseline: TextBaseline.ideographic,
-                      ),
+                    color: Colors.black,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w400,
+                  ),
                   initialValue: PhoneNumber(isoCode: 'UA'),
 
                   formatInput: true,
                   keyboardType: TextInputType.phone,
 
-                  // inputBorder: const OutlineInputBorder(
-                  //   borderRadius: BorderRadius.all(Radius.circular(8)),
-                  // ),
                   inputDecoration: const InputDecoration(
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(9)),
@@ -114,15 +99,14 @@ class _EnterPhonePageState extends State<EnterPhonePage> {
                     ),
                     hintText: '- -  - - -  - -  - -',
                     hintStyle: TextStyle(
-                        fontSize: 19, //30
-                        fontWeight: FontWeight.bold),
+                      fontSize: 19, //30
+                      fontWeight: FontWeight.bold,
+                    ),
                     contentPadding: EdgeInsets.zero,
                     alignLabelWithHint: false,
                     constraints: BoxConstraints(
                       minHeight: 45,
-                      // minWidth: 303,
                       maxHeight: 45,
-                      // maxWidth: 303,
                     ),
                     filled: true,
                     fillColor: AppColors.textField,
@@ -151,16 +135,6 @@ class _EnterPhonePageState extends State<EnterPhonePage> {
                     ),
                   ),
                 ),
-                // ElevatedButton(
-                //   onPressed: () => context.router.replace(const HomeRoute()),
-                //   child: const Text('Skip'),
-                // ),
-                // ElevatedButton(
-                //     onPressed: () => context.router.replaceAll([
-                //           HomeRoute(),
-                //           MyProfileRoute()
-                //         ]), //.replace(MyProfileRoute()),
-                //     child: const Text('Profile')),
                 const SizedBox(
                   height: 80,
                 ),

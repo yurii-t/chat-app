@@ -1,5 +1,5 @@
+// ignore_for_file: avoid-unused-parameters
 import 'dart:io';
-import 'dart:math';
 
 import 'package:bloc/bloc.dart';
 import 'package:chat_app/domain/entities/chat_entity.dart';
@@ -12,6 +12,7 @@ import 'package:chat_app/domain/usecases/get_reference_usecase.dart';
 import 'package:chat_app/domain/usecases/read_messages_usecase.dart';
 import 'package:chat_app/domain/usecases/send_message_usecase.dart';
 import 'package:chat_app/domain/usecases/set_messageid_usecase.dart';
+import 'package:chat_app/domain/usecases/update_chatting_with_id_usecase.dart';
 import 'package:chat_app/domain/usecases/upload_image_usecase.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
@@ -28,8 +29,9 @@ class ChatInteractionBloc
   final CreateChatUseCase createChatUseCase;
   final UploadImageUsecase uploadImageUsecase;
   final GetReferenceUseCase getReferenceUseCase;
-  final ReadMesagesUseCase readMesagesUseCase;
+  final ReadMessagesUseCase readMesagesUseCase;
   final SetMessageIdUsecase setMessageIdUsecase;
+  final UpdateChattingWithIdUseCase updateChattingWithIdUseCase;
   ChatInteractionBloc(
     this.getMessagesUseCase,
     this.sendMessageUseCase,
@@ -40,12 +42,14 @@ class ChatInteractionBloc
     this.getReferenceUseCase,
     this.readMesagesUseCase,
     this.setMessageIdUsecase,
+    this.updateChattingWithIdUseCase,
   ) : super(ChatInteractionInitial()) {
     on<ChatInteractionsCreateChat>(onCreateChat);
     on<ChatInteractionsLoad>(getAllMessages);
     on<ChatInteractionsSendMessage>(sendMessage);
     on<ChatInteractionsUploadImage>(uploadImage);
     on<ChatInteractionsSeenMessages>(seenMessages);
+    on<ChatInteractionsupdateChattingWithId>(updateChattingWith);
   }
 
   Future<void> onCreateChat(
@@ -60,15 +64,17 @@ class ChatInteractionBloc
     }
   }
 
-  void getAllMessages(
-      ChatInteractionsLoad event, Emitter<ChatInteractionState> emit) async {
+  Future<void> getAllMessages(
+    ChatInteractionsLoad event,
+    Emitter<ChatInteractionState> emit,
+  ) async {
     final chatId = await getChatIdUseCase
         .call(GetChatIdParams(uid: event.uid, otherUid: event.otherUid));
 
     await emit.forEach(
       getMessagesUseCase.call(chatId),
-      onData: (List<MessageEntity> messages) =>
-          ChatInteractionLoaded(messages: messages),
+      onData: (messages) =>
+          ChatInteractionLoaded(messages: messages as List<MessageEntity>),
     );
   }
 
@@ -116,16 +122,17 @@ class ChatInteractionBloc
     }
   }
 
-  Future<void> uploadImage(ChatInteractionsUploadImage event,
-      Emitter<ChatInteractionState> emit) async {
+  Future<void> uploadImage(
+    ChatInteractionsUploadImage event,
+    Emitter<ChatInteractionState> emit,
+  ) async {
     try {
       final chatId = await getChatIdUseCase.call(
         GetChatIdParams(uid: event.senderId, otherUid: event.recipientId),
       );
       final ref = await getReferenceUseCase
           .call(GetReferenceParams(event.image, chatId, 'chats'));
-      // final String imageUrl =
-      //     await uploadImageUsecase.call(UploadImageParams(event.image, chatId));
+
       final task =
           await uploadImageUsecase.call(UploadImageParams(event.image, ref));
       final imageUrl =
@@ -168,10 +175,20 @@ class ChatInteractionBloc
     }
   }
 
-  Future<void> seenMessages(ChatInteractionsSeenMessages event,
-      Emitter<ChatInteractionState> emit) async {
+  Future<void> seenMessages(
+    ChatInteractionsSeenMessages event,
+    Emitter<ChatInteractionState> emit,
+  ) async {
     final chatId = await getChatIdUseCase.call(
-        GetChatIdParams(uid: event.senderId, otherUid: event.recipientId));
+      GetChatIdParams(uid: event.senderId, otherUid: event.recipientId),
+    );
     await readMesagesUseCase.call(ReadMesagesParams(chatId, event.recipientId));
+  }
+
+  Future<void> updateChattingWith(
+    ChatInteractionsupdateChattingWithId event,
+    Emitter<ChatInteractionState> emit,
+  ) async {
+    await updateChattingWithIdUseCase.call(event.recipientId);
   }
 }

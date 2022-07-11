@@ -1,8 +1,7 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:chat_app/domain/entities/user_entity.dart';
+
 import 'package:chat_app/presentation/bloc/auth/bloc/phone_auth_bloc.dart';
 import 'package:chat_app/presentation/bloc/auth_status/bloc/auth_status_bloc.dart';
-import 'package:chat_app/presentation/bloc/user/bloc/user_bloc.dart';
 
 import 'package:chat_app/routes/app_router.gr.dart';
 import 'package:chat_app/theme/app_colors.dart';
@@ -26,7 +25,6 @@ class _EnterPinPageState extends State<EnterPinPage> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: BlocListener<PhoneAuthBloc, PhoneAuthState>(
-        // BlocConsumer<PhoneAuthBloc, PhoneAuthState>(
         listener: (context, state) {
           if (state is PhoneAuthVerified) {
             context.read<AuthStatusBloc>().add(AuthStatusLogedIn());
@@ -34,24 +32,6 @@ class _EnterPinPageState extends State<EnterPinPage> {
               [HomeRoute(userId: state.uid), const MyProfileRoute()],
             );
           }
-          // if (state is PhoneAuthVerified) {
-          //   // context.router.replace(const HomeRoute());
-          //   // BlocBuilder(builder: (context, userState) {
-          //   //   if (userState is UserLoaded) {
-          //   //     final currentUseInfo = userState.allUsers.firstWhere(
-          //   //       (user) => user.userId == state,
-          //   //     );
-
-          //   //     // _appRouter.replace(HomeRoute(userInfo: currentUseInfo));
-          //   //     context.router.replaceAll(
-          //   //         [HomeRoute(userInfo: currentUseInfo), MyProfileRoute()]);
-          //   //     //
-          //   //   }
-          //   //   return Container();
-          //   // });
-          //   // context.router.replaceAll([HomeRoute(userInfo: ), MyProfileRoute()]);
-          //   context.read<AuthStatusBloc>().add(AuthStatusLogedIn());
-          // }
 
           if (state is PhoneAuthError) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -61,7 +41,6 @@ class _EnterPinPageState extends State<EnterPinPage> {
             );
           }
         },
-
         child: Container(
           padding: const EdgeInsets.only(left: 36, right: 36, top: 81),
           width: MediaQuery.of(context).size.width,
@@ -83,7 +62,6 @@ class _EnterPinPageState extends State<EnterPinPage> {
               const SizedBox(
                 height: 32,
               ),
-              // TextField(),
               Container(
                 width: 200,
                 height: 45,
@@ -130,7 +108,6 @@ class _EnterPinPageState extends State<EnterPinPage> {
                   ),
                 ),
               ),
-
               const SizedBox(
                 height: 67,
               ),
@@ -160,34 +137,34 @@ class _EnterPinPageState extends State<EnterPinPage> {
   }
 }
 
-class _SomeScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final userId = context.select<AuthStatusBloc, String?>(
-      (bloc) {
-        final state = bloc.state;
+// class _SomeScreen extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     final userId = context.select<AuthStatusBloc, String?>(
+//       (bloc) {
+//         final state = bloc.state;
 
-        return state is Authenticated ? state.uid : null;
-      },
-    );
+//         return state is Authenticated ? state.uid : null;
+//       },
+//     );
 
-    final currentUserInfo = context.select<UserBloc, UserEntity?>(
-      (bloc) {
-        final state = bloc.state;
-        if (state is UserLoaded) {
-          final currentUseInfo = state.allUsers.firstWhere(
-            (user) => user.userId == userId,
-          );
+//     final currentUserInfo = context.select<UserBloc, UserEntity?>(
+//       (bloc) {
+//         final state = bloc.state;
+//         if (state is UserLoaded) {
+//           final currentUseInfo = state.allUsers.firstWhere(
+//             (user) => user.userId == userId,
+//           );
 
-          return currentUseInfo;
-        }
+//           return currentUseInfo;
+//         }
 
-        return null;
-      },
-    );
+//         return null;
+//       },
+//     );
 
-    return currentUserInfo != null
-        ? const Scaffold()
-        : const Text('not logged in');
-  }
-}
+//     return currentUserInfo != null
+//         ? const Scaffold()
+//         : const Text('not logged in');
+//   }
+// }

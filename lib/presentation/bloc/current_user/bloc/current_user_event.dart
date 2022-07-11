@@ -8,8 +8,6 @@ abstract class CurrentUserEvent extends Equatable {
 }
 
 class CreateUser extends CurrentUserEvent {
-  // userId;
-  // final String userPhone;
   final String userName;
   final File userImage;
   final String userAddress;
@@ -18,17 +16,16 @@ class CreateUser extends CurrentUserEvent {
   final String userPreferLanguage;
 
   const CreateUser(
-      // this.userPhone,
-      this.userName,
-      this.userImage,
-      this.userAddress,
-      this.userGender,
-      this.userMartialStatus,
-      this.userPreferLanguage);
+    this.userName,
+    this.userImage,
+    this.userAddress,
+    this.userGender,
+    this.userMartialStatus,
+    this.userPreferLanguage,
+  );
 
   @override
   List<Object> get props => [
-        // userPhone,
         userName,
         userImage,
         userAddress,

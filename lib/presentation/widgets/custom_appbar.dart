@@ -24,29 +24,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           widgetleft,
-          // GestureDetector(
-          //   child: SvgPicture.asset('assets/icons/camera.svg'),
-          // ),
           widgetCenter,
-          // const Text(
-          //   'Message',
-          //   style: TextStyle(
-          //     fontSize: 18,
-          //     fontWeight: FontWeight.w400,
-          //     color: Colors.black,
-          //   ),
-          // ),
           widgetRight,
-          // GestureDetector(
-          //   child: const Text(
-          //     'My profile',
-          //     style: TextStyle(
-          //       fontSize: 15,
-          //       fontWeight: FontWeight.w400,
-          //       color: Colors.black,
-          //     ),
-          //   ),
-          // ),
         ],
       ),
     );

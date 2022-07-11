@@ -53,32 +53,16 @@ class FileInteractionUploadFile extends FileInteractionEvent {
       ];
 }
 
-// class FileInteractionUploading extends FileInteractionEvent {
-//   final String senderId;
-
-//   final String recipientId;
-
-//   final File image;
-
-//   FileInteractionUploading(this.senderId, this.recipientId, this.image);
-//   @override
-//   List<Object> get props => [senderId, recipientId, image];
-// }
-
 class FileInteractionDownloading extends FileInteractionEvent {
-  // final String senderId;
-
-  // final String recipientId;
   final String url;
   final String messageId;
 
   const FileInteractionDownloading(
-      // this.senderId,this.recipientId,
-      this.messageId,
-      this.url);
+    this.messageId,
+    this.url,
+  );
   @override
   List<Object> get props => [
-        // senderId,recipientId,
         url,
         messageId,
       ];

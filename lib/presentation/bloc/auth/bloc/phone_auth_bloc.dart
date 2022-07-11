@@ -1,5 +1,5 @@
 import 'package:bloc/bloc.dart';
-import 'package:chat_app/data/datasource/firebase/firebase_remote_datasource_impl.dart';
+
 import 'package:chat_app/domain/usecases/signin_with_credential_usecase.dart';
 import 'package:chat_app/domain/usecases/verify_phone_usecase.dart';
 
@@ -10,7 +10,6 @@ part 'phone_auth_event.dart';
 part 'phone_auth_state.dart';
 
 class PhoneAuthBloc extends Bloc<PhoneAuthEvent, PhoneAuthState> {
-  // final FirebaseRemoteDataSource firebasePhoneAuth;
   final SigninWithCredentialUseCase signinWithCredentialUseCase;
   final VerifyPhoneUseCase verifyPhoneUseCase;
 
@@ -38,22 +37,6 @@ class PhoneAuthBloc extends Bloc<PhoneAuthEvent, PhoneAuthState> {
   ) async {
     emit(PhoneAuthLoading());
     try {
-      // await firebasePhoneAuth.verifyPhone(
-      //   phoneNumber: event.phoneNumber,
-      //   verificationCompleted: (credential) async {
-      //     add(OnPhoneAuthVerificationCompleteEvent(credential: credential));
-      //   },
-      //   verificationFailed: (e) {
-      //     add(OnPhoneAuthErrorEvent(error: e.code));
-      //   },
-      //   codeSent: (verificationId, resendToken) {
-      //     add(OnPhoneOtpSent(
-      //       verificationId: verificationId,
-      //       token: resendToken,
-      //     ));
-      //   },
-      //   codeAutoRetrievalTimeout: (verificationId) {},
-      // );
       await verifyPhoneUseCase.call(VerifyPhoneParams(
         phoneNumber: event.phoneNumber,
         verificationCompleted: (credential) async {
@@ -68,7 +51,9 @@ class PhoneAuthBloc extends Bloc<PhoneAuthEvent, PhoneAuthState> {
             token: resendToken,
           ));
         },
-        codeAutoRetrievalTimeout: (verificationId) {},
+        codeAutoRetrievalTimeout: (verificationId) {
+          print(verificationId);
+        },
       ));
     } on Exception catch (e) {
       emit(PhoneAuthError(error: e.toString()));
@@ -97,13 +82,6 @@ class PhoneAuthBloc extends Bloc<PhoneAuthEvent, PhoneAuthState> {
     Emitter<PhoneAuthState> emit,
   ) async {
     try {
-      // await firebasePhoneAuth
-      //     .signInWithCredential(event.credential)
-      //     .then((user) {
-      //   if (user.user != null) {
-      //     emit(PhoneAuthVerified());
-      //   }
-      // });
       await signinWithCredentialUseCase.call(event.credential).then((user) {
         if (user.user != null) {
           emit(PhoneAuthVerified(user.user!.uid));

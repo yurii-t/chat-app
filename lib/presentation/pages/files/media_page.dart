@@ -25,19 +25,15 @@ class MediaPage extends StatelessWidget {
             return Container(
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                  color: Colors.amber,
-                  borderRadius: BorderRadius.circular(4),
-                  image: DecorationImage(
-                      image: NetworkImage(
-                        imagesList[index].message,
-                      ),
-                      fit: BoxFit
-                          .fill) //Image.network(imagesList[index].message,)
+                color: Colors.amber,
+                borderRadius: BorderRadius.circular(4),
+                image: DecorationImage(
+                  image: NetworkImage(
+                    imagesList[index].message,
                   ),
-              // child: Image.network(
-              //   fit: BoxFit.fill,
-              //   imagesList[index].message,
-              // ),
+                  fit: BoxFit.fill,
+                ),
+              ),
             );
           },
         ),

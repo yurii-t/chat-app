@@ -13,15 +13,18 @@ class CameraPage extends StatelessWidget {
           height: MediaQuery.of(context).size.height,
           color: AppColors.green,
         ),
-        Align(
+        const Align(
           alignment: Alignment.topRight,
-          child: const Icon(Icons.cancel_outlined),
+          child: Icon(Icons.cancel_outlined),
         ),
         Align(
           alignment: Alignment.bottomCenter,
           child: Container(
+            color: Colors.amber,
             child: Row(
-              children: [],
+              children: const [
+                Text('CAMERA PaGE'),
+              ],
             ),
           ),
         ),

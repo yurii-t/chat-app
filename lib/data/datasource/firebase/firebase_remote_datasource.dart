@@ -20,7 +20,7 @@ abstract class FirebaseRemoteDataSource {
 
   Future<void> createChat(String uid, String otherUid);
   Future<void> sendMessage(MessageEntity messageEntity, String chatId);
-  // Future<String> sendMessage(MessageEntity messageEntity, String chatId);
+
   Future<String> setMessageId(String chatId);
 
   Future<void> addActiveChatDetails(ChatEntity chatEntity);
@@ -32,4 +32,5 @@ abstract class FirebaseRemoteDataSource {
   Future<String> getChatId(String uid, String otherUid);
   Future<void> readMessages(String chatId, String sederUID);
   Future<void> getNewMessages(String chatId, String recepientUid);
+  Future<void> updateChattingWithId(String recepientUid);
 }

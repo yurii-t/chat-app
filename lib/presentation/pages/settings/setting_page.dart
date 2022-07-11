@@ -18,7 +18,6 @@ class _SettingPageState extends State<SettingPage> {
         width: MediaQuery.of(context).size.width * 0.7,
         height: MediaQuery.of(context).size.height * 0.3,
         padding: const EdgeInsets.all(15),
-        // margin: const EdgeInsets.symmetric(vertical: 50),
         decoration: BoxDecoration(
           color: AppColors.lightGrey,
           borderRadius: BorderRadius.circular(16),
@@ -72,7 +71,6 @@ class _SettingPageState extends State<SettingPage> {
                     return Padding(
                       padding: const EdgeInsets.only(
                         left: 16,
-                        // right: 16,
                         top: 35,
                         bottom: 50,
                       ),
@@ -81,7 +79,9 @@ class _SettingPageState extends State<SettingPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           GestureDetector(
-                            onTap: () {},
+                            onTap: () {
+                              print('Language tap');
+                            },
                             child: const Text(
                               'English',
                               style: TextStyle(
@@ -95,7 +95,9 @@ class _SettingPageState extends State<SettingPage> {
                             height: 26,
                           ),
                           GestureDetector(
-                            onTap: () {},
+                            onTap: () {
+                              print('Language tap');
+                            },
                             child: const Text(
                               'Українська',
                               style: TextStyle(
@@ -113,7 +115,9 @@ class _SettingPageState extends State<SettingPage> {
               },
             ),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                print('log out');
+              },
               child: const Text('Log out'),
               style: ElevatedButton.styleFrom(
                 primary: AppColors.green,

@@ -9,6 +9,7 @@ class UserEntity extends Equatable {
   final String userGender;
   final String userMartialStatus;
   final String userPreferLanguage;
+  final String pushToken;
 
   const UserEntity({
     required this.userId,
@@ -19,6 +20,7 @@ class UserEntity extends Equatable {
     required this.userGender,
     required this.userMartialStatus,
     required this.userPreferLanguage,
+    required this.pushToken,
   });
   @override
   List<Object?> get props => [
@@ -30,5 +32,6 @@ class UserEntity extends Equatable {
         userGender,
         userMartialStatus,
         userPreferLanguage,
+        pushToken,
       ];
 }

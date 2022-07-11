@@ -1,6 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:chat_app/domain/entities/message_entity.dart';
-import 'package:chat_app/domain/entities/user_entity.dart';
+
 import 'package:chat_app/presentation/bloc/user/bloc/user_bloc.dart';
 import 'package:chat_app/presentation/pages/profile/widgets/profile_list_tile.dart';
 import 'package:chat_app/routes/app_router.gr.dart';
@@ -33,7 +33,7 @@ class ProfilePage extends StatelessWidget {
         }
         if (state is UserLoaded) {
           final userInfo = state.allUsers.firstWhere(
-            (user) => user.userId == userid, //authBlocState.uid,
+            (user) => user.userId == userid,
           );
 
           return Scaffold(
@@ -41,7 +41,7 @@ class ProfilePage extends StatelessWidget {
               children: [
                 Container(
                   width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height * 0.42, //375,
+                  height: MediaQuery.of(context).size.height * 0.42,
                   color: AppColors.white,
                   child: userInfo.userImage != ''
                       ? Image.network(
@@ -139,7 +139,8 @@ class ProfilePage extends StatelessWidget {
                                   width: 15,
                                 ),
                                 SvgPicture.asset(
-                                    'assets/icons/call_elipse.svg'),
+                                  'assets/icons/call_elipse.svg',
+                                ),
                               ],
                             ),
                           ],
@@ -176,9 +177,10 @@ class ProfilePage extends StatelessWidget {
                         ),
                         ProfileListTile(
                           tap: () => context.router.push(FilesNavigationRoute(
-                              allMessages: allMessages,
-                              recipientName: userInfo.userName,
-                              recipientPhoto: userInfo.userImage)),
+                            allMessages: allMessages,
+                            recipientName: userInfo.userName,
+                            recipientPhoto: userInfo.userImage,
+                          )),
                           image: SvgPicture.asset('assets/icons/media.svg'),
                           title: 'Media, Links and Docs',
                           textTrailing: '130',

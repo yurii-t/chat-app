@@ -1,6 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:chat_app/domain/entities/user_entity.dart';
-import 'package:chat_app/presentation/bloc/chat/bloc/chat_interaction_bloc.dart';
+
 import 'package:chat_app/presentation/bloc/messages/bloc/active_chats_bloc.dart';
 import 'package:chat_app/presentation/widgets/custom_appbar.dart';
 import 'package:chat_app/routes/app_router.gr.dart';
@@ -22,7 +22,6 @@ class MessagePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // backgroundColor: Colors.white,
       appBar: CustomAppBar(
         widgetleft: GestureDetector(
           child: SvgPicture.asset('assets/icons/camera.svg'),
@@ -47,7 +46,6 @@ class MessagePage extends StatelessWidget {
           ),
         ),
       ),
-
       body: BlocBuilder<ActiveChatsBloc, ActiveChatsState>(
         builder: (context, state) {
           if (state is ActiveChatsError) {
@@ -72,7 +70,6 @@ class MessagePage extends StatelessWidget {
                       context.read<ActiveChatsBloc>().add(
                             ActiveChatsNewMessagesCount(
                               state.chats[index].chatId,
-                              // userInfo.userId,
                               state.chats[index].recepientUid,
                             ),
                           );
@@ -143,7 +140,7 @@ class MessagePage extends StatelessWidget {
                               ),
                             ),
                             CustomSlidableAction(
-                              padding: EdgeInsets.only(top: 10),
+                              padding: const EdgeInsets.only(top: 10),
                               onPressed: null,
                               backgroundColor: AppColors.green,
                               foregroundColor: Colors.white,
@@ -160,7 +157,6 @@ class MessagePage extends StatelessWidget {
                         ),
                         child: ListTile(
                           onTap: () {
-                            // context.read<ChatInteractionBloc>().add(ChatInte)
                             context.router.push(ChatRoute(
                               senderUid: userInfo.userId,
                               senderName: chatsData.senderName,
@@ -179,12 +175,9 @@ class MessagePage extends StatelessWidget {
                           leading: CircleAvatar(
                             backgroundColor: AppColors.grey,
                             radius: 30,
-                            child: userInfo.userImage != ''
-                                ? Image.network(userInfo.userImage)
-                                : SvgPicture.asset(
-                                    'assets/icons/media.svg',
-                                    fit: BoxFit.fill,
-                                  ),
+                            backgroundImage: userInfo.userImage != ''
+                                ? NetworkImage(userInfo.userImage)
+                                : null,
                           ),
                           title: Padding(
                             padding: const EdgeInsets.only(bottom: 8),
@@ -192,7 +185,6 @@ class MessagePage extends StatelessWidget {
                               children: [
                                 Expanded(
                                   child: Text(
-                                    // 'User Name',
                                     chatsData.recepientName,
                                     style: const TextStyle(
                                       fontSize: 16,
@@ -217,7 +209,6 @@ class MessagePage extends StatelessWidget {
                             children: [
                               Expanded(
                                 child: Text(
-                                  // 'Text message',
                                   chatsData.recentTextMessage,
                                   style: const TextStyle(
                                     fontSize: 16,
@@ -228,7 +219,6 @@ class MessagePage extends StatelessWidget {
                               ),
                               if (chatsData.newMessages > 0)
                                 Container(
-                                  // margin: EdgeInsets.only(top: 16),
                                   alignment: Alignment.center,
                                   width: 22,
                                   height: 22,
@@ -243,7 +233,8 @@ class MessagePage extends StatelessWidget {
                                 )
                               else
                                 SvgPicture.asset(
-                                    'assets/icons/check_marks.svg'),
+                                  'assets/icons/check_marks.svg',
+                                ),
                             ],
                           ),
                         ),

@@ -13,17 +13,6 @@ class SendMessageUseCase implements UseCase<void, SendMessageParams> {
   }
 }
 
-// class SendMessageUseCase implements UseCase<String, SendMessageParams> {
-//   final FirebaseRepository firebaseRepository;
-
-//   SendMessageUseCase(this.firebaseRepository);
-
-//   @override
-//   Future<String> call(SendMessageParams params) async {
-//     return firebaseRepository.sendMessage(params.messageEntity, params.chatId);
-//   }
-// }
-
 class SendMessageParams {
   final MessageEntity messageEntity;
   final String chatId;

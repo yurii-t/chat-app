@@ -8,10 +8,6 @@ class FirebaseStorageRepositoryImpl implements FirebaseStorageRepository {
   final FirebaseStorageRemoteDataSource _firebaseStorageRemoteDataSource;
 
   FirebaseStorageRepositoryImpl(this._firebaseStorageRemoteDataSource);
-  // @override
-  // Future<String> uploadImage(File image, String chatId) async {
-  //   return _firebaseStorageRemoteDataSource.uploadImage(image, chatId);
-  // }
 
   @override
   Stream<double> uploadProgress(UploadTask task) {
@@ -24,9 +20,11 @@ class FirebaseStorageRepositoryImpl implements FirebaseStorageRepository {
   }
 
   @override
-  // Future<Reference> getReference(File file, String chatId) async {
   Future<Reference> getReference(
-          File file, String chatId, String folder) async =>
+    File file,
+    String chatId,
+    String folder,
+  ) async =>
       _firebaseStorageRemoteDataSource.getReference(file, chatId, folder);
 
   @override

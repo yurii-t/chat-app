@@ -1,17 +1,7 @@
 import 'package:chat_app/domain/entities/user_entity.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:equatable/equatable.dart';
 
 class UserModel extends UserEntity {
-  // final String userId;
-  // final String userPhone;
-  // final String userName;
-  // final String userImage;
-  // final String userAddress;
-  // final String userGender;
-  // final String userMartialStatus;
-  // final String userPreferLanguage;
-
   const UserModel({
     required String userId,
     required String userPhone,
@@ -21,6 +11,7 @@ class UserModel extends UserEntity {
     required String userGender,
     required String userMartialStatus,
     required String userPreferLanguage,
+    required String pushToken,
   }) : super(
           userId: userId,
           userPhone: userPhone,
@@ -30,6 +21,7 @@ class UserModel extends UserEntity {
           userGender: userGender,
           userMartialStatus: userMartialStatus,
           userPreferLanguage: userPreferLanguage,
+          pushToken: pushToken,
         );
   factory UserModel.fromSnapShot(DocumentSnapshot snap) {
     final UserModel user = UserModel(
@@ -41,6 +33,7 @@ class UserModel extends UserEntity {
       userGender: snap['userGender'] as String,
       userMartialStatus: snap['userMartialStatus'] as String,
       userPreferLanguage: snap['userPreferLanguage'] as String,
+      pushToken: snap['pushToken'] as String,
     );
 
     return user;
@@ -55,18 +48,7 @@ class UserModel extends UserEntity {
       'userGender': userGender,
       'userMartialStatus': userMartialStatus,
       'userPreferLanguage': userPreferLanguage,
+      'pushToken': pushToken,
     };
   }
-
-  // @override
-  // List<Object?> get props => [
-  //       userId,
-  //       userPhone,
-  //       userName,
-  //       userImage,
-  //       userAddress,
-  //       userGender,
-  //       userMartialStatus,
-  //       userPreferLanguage,
-  //     ];
 }

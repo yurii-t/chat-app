@@ -1,7 +1,5 @@
 // ignore_for_file: prefer-single-widget-per-file
 
-import 'dart:io';
-
 import 'package:chat_app/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -23,7 +21,7 @@ class MessageBubble extends StatelessWidget {
     Key? key,
   }) : super(key: key);
   final MessageBubbleType type;
-  final String time; //DateTime...
+  final String time;
   final String? text;
   final bool seen;
   final bool? downloaded;
@@ -47,11 +45,11 @@ class MessageBubble extends StatelessWidget {
                 type == MessageBubbleType.sendDocError
             ? Alignment.centerRight
             : Alignment.centerLeft,
-        child: error == false
+        child: !error
             ? buildMessageBubble(
                 maxBubbleWidth,
                 Colors.transparent,
-                context,
+                // context,
               )
             : GestureDetector(
                 onTap: () {
@@ -67,7 +65,6 @@ class MessageBubble extends StatelessWidget {
                       return Padding(
                         padding: const EdgeInsets.only(
                           left: 16,
-                          // right: 16,
                           top: 35,
                           bottom: 50,
                         ),
@@ -123,7 +120,7 @@ class MessageBubble extends StatelessWidget {
                     buildMessageBubble(
                       maxBubbleWidth,
                       Colors.red,
-                      context,
+                      // context,
                     ),
                     const SizedBox(
                       height: 5,
@@ -140,7 +137,7 @@ class MessageBubble extends StatelessWidget {
   Widget buildMessageBubble(
     double maxWidth,
     Color errorBorder,
-    BuildContext context,
+    // BuildContext context,
   ) {
     switch (type) {
       case MessageBubbleType.sendMessage:
@@ -193,7 +190,6 @@ class MessageBubble extends StatelessWidget {
               topRight: Radius.circular(19),
               bottomRight: Radius.circular(19),
             ),
-            // width: maxWidth,
           );
         }
       case MessageBubbleType.sendDoc:
@@ -245,19 +241,6 @@ class MessageBubble extends StatelessWidget {
             uploadValue: uploadValue ?? 0,
             uploadString: uploadString ?? '',
           );
-          // return DocContainerSendError(
-          // seen: seen,
-          //     docName: text ?? 'doc',
-          //     docSize: docSize ?? '',
-          //     color: AppColors.green,
-          //     time: time,
-          //     textColor: AppColors.white,
-          //     subTextColor: AppColors.white,
-          //     border: BorderRadius.circular(16),
-          //     errorBorder: Colors.red,
-          //     uploadValue: uploadValue ?? 0,
-          //     uploadString: uploadString ?? '',
-          //   );
         }
     }
   }
@@ -293,10 +276,6 @@ class DocContainerSend extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // final isDownloaded = downloaded == true
-    //     ? SvgPicture.asset('assets/icons/open_doc.svg')
-    //     : SvgPicture.asset('assets/icons/download_doc.svg');
-
     return Container(
       constraints:
           BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.7),
@@ -308,16 +287,13 @@ class DocContainerSend extends StatelessWidget {
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-        leading: uploadValue < 1
-            ? CircularProgressIndicator(
-                value: uploadValue.toDouble(),
-              )
-            : uploadValue >= 1
-                ? SvgPicture.asset('assets/icons/open_doc.svg')
+        leading: uploadValue == 0
+            ? SvgPicture.asset('assets/icons/open_doc.svg')
+            : uploadValue < 1
+                ? CircularProgressIndicator(
+                    value: uploadValue.toDouble(),
+                  )
                 : SvgPicture.asset('assets/icons/open_doc.svg'),
-        // downloaded == true
-        //     ? SvgPicture.asset('assets/icons/open_doc.svg')
-        //     : SvgPicture.asset('assets/icons/download_doc.svg'),
         title: Text(
           docName,
           style: TextStyle(
@@ -330,7 +306,7 @@ class DocContainerSend extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                uploadValue >= 1
+                uploadValue == 0
                     ? docSize
                     : uploadValue < 1
                         ? uploadString
@@ -352,9 +328,10 @@ class DocContainerSend extends StatelessWidget {
                     fontWeight: FontWeight.w400,
                   ),
                 ),
-                seen == true
-                    ? SvgPicture.asset('assets/icons/message_checks.svg')
-                    : const Text(''),
+                if (seen == true)
+                  SvgPicture.asset('assets/icons/message_checks.svg')
+                else
+                  const Text(''),
               ],
             ),
           ],
@@ -394,10 +371,6 @@ class DocContainerSendError extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // final isDownloaded = downloaded == true
-    //     ? SvgPicture.asset('assets/icons/open_doc.svg')
-    //     : SvgPicture.asset('assets/icons/download_doc.svg');
-
     return Container(
       constraints:
           BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.7),
@@ -410,9 +383,6 @@ class DocContainerSendError extends StatelessWidget {
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 8),
         leading: SvgPicture.asset('assets/icons/open_doc.svg'),
-        // downloaded == true
-        //     ? SvgPicture.asset('assets/icons/open_doc.svg')
-        //     : SvgPicture.asset('assets/icons/download_doc.svg'),
         title: Text(
           docName,
           style: TextStyle(
@@ -443,9 +413,10 @@ class DocContainerSendError extends StatelessWidget {
                     fontWeight: FontWeight.w400,
                   ),
                 ),
-                seen == true
-                    ? SvgPicture.asset('assets/icons/message_checks.svg')
-                    : const Text(''),
+                if (seen == true)
+                  SvgPicture.asset('assets/icons/message_checks.svg')
+                else
+                  const Text(''),
               ],
             ),
           ],
@@ -484,13 +455,6 @@ class DocContainerRecive extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // final downloading = if(downloadValue <1){  CircularProgressIndicator(
-    //             value: downloadValue.toDouble()
-    //           );} SvgPicture.asset('assets/icons/open_doc.svg');
-    // final isDownloaded = downloaded
-    //     ? SvgPicture.asset('assets/icons/open_doc.svg')
-    //     : SvgPicture.asset('assets/icons/download_doc.svg');
-
     return Container(
       constraints:
           BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.7),
@@ -502,25 +466,13 @@ class DocContainerRecive extends StatelessWidget {
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-        leading: downloadValue < 1
-            ? CircularProgressIndicator(
-                value: downloadValue.toDouble(),
-              )
-            : downloadValue >= 1
-                ? SvgPicture.asset('assets/icons/open_doc.svg')
-                : SvgPicture.asset('assets/icons/download_doc.svg'),
-        //( if(downloadValue <1){ CircularProgressIndicator(
-        //         value: downloadValue.toDouble()
-        //       );}else if(downloadValue >=1){
-        //         SvgPicture.asset('assets/icons/open_doc.svg')
-        //       }else SvgPicture.asset('assets/icons/download_doc.svg');)
-        // !downloading
-        //     ? SvgPicture.asset('assets/icons/download_doc.svg')
-        //     : dow
-        // downloaded == true
-        //     ? SvgPicture.asset('assets/icons/open_doc.svg')
-        //     : SvgPicture.asset('assets/icons/download_doc.svg'),
-
+        leading: downloadValue == 0
+            ? SvgPicture.asset('assets/icons/download_doc.svg')
+            : downloadValue < 1
+                ? CircularProgressIndicator(
+                    value: downloadValue.toDouble(),
+                  )
+                : SvgPicture.asset('assets/icons/open_doc.svg'),
         title: Text(
           docName,
           style: TextStyle(
@@ -533,11 +485,10 @@ class DocContainerRecive extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                // downloaded ? docSize : downloadString,
-                downloadValue < 1
-                    ? downloadString
-                    : downloadValue >= 1
-                        ? docSize
+                downloadValue == 0
+                    ? docSize
+                    : downloadValue < 1
+                        ? downloadString
                         : docSize,
                 style: TextStyle(
                   fontSize: 12,
@@ -586,10 +537,6 @@ class ImageCotainer extends StatelessWidget {
           color: color,
           borderRadius: border,
           border: Border.all(color: errorBorder ?? Colors.transparent),
-          // image: DecorationImage(
-          //   image:  NetworkImage(imageUrl ?? ''),
-          //   fit: BoxFit.cover,
-          // ),
         ),
         child: Image.network(
           imageUrl ?? '',
@@ -610,25 +557,6 @@ class ImageCotainer extends StatelessWidget {
           },
           fit: BoxFit.fill,
         ),
-        // child:
-        // DecoratedBox(
-        //   decoration: BoxDecoration(
-        //     color: color,
-        //     borderRadius: border,
-        //     border: Border.all(color: errorBorder ?? Colors.transparent),
-        //     image: DecorationImage(
-        //       image: NetworkImage(imageUrl ?? ''),
-        //       fit: BoxFit.cover,
-        //     ),
-        //   ),
-        //   child: imageUrl == null
-        //       ? const CircularProgressIndicator(
-        //           // value: ,
-        //           color: Colors.white,
-        //         )
-        //       : null,
-        //   // : Image.network(imageUrl ?? ''),
-        // ),
       ),
     );
   }
@@ -688,7 +616,7 @@ class MessageContainer extends StatelessWidget {
                     ),
                   ),
                   const TextSpan(
-                    text: '00:00:00', //time
+                    text: '00:00:00',
                     style: TextStyle(
                       color: Colors.transparent,
                     ),
@@ -712,9 +640,10 @@ class MessageContainer extends StatelessWidget {
                     fontWeight: FontWeight.w300,
                   ),
                 ),
-                seen == true
-                    ? SvgPicture.asset('assets/icons/message_checks.svg')
-                    : const Text(''),
+                if (seen == true)
+                  SvgPicture.asset('assets/icons/message_checks.svg')
+                else
+                  const Text(''),
               ],
             ),
           ),

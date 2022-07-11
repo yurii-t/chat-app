@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:auto_route/auto_route.dart';
 import 'package:chat_app/domain/entities/user_entity.dart';
 import 'package:chat_app/presentation/bloc/auth_status/bloc/auth_status_bloc.dart';
@@ -45,7 +43,7 @@ class StatusPage extends StatelessWidget {
                 style: TextStyle(color: Colors.transparent),
               ),
               GestureDetector(
-                onTap: () => context.router.push(MyProfileRoute()),
+                onTap: () => context.router.push(const MyProfileRoute()),
                 child: const Text(
                   'My profile',
                   style: TextStyle(

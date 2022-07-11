@@ -1,3 +1,4 @@
+// ignore_for_file: avoid-unused-parameters
 import 'package:bloc/bloc.dart';
 import 'package:chat_app/core/usecases/use_case.dart';
 import 'package:chat_app/domain/usecases/get_current_user_uid_usecase.dart';
@@ -12,18 +13,20 @@ class AuthStatusBloc extends Bloc<AuthStatusEvent, AuthStatusState> {
   final GetCurrentUserUidUseCase getCurrentUserUidUseCase;
   final IsSignInUseCase isSignInUseCase;
   final SignOutUseCase signOutUseCase;
-  AuthStatusBloc(
-      {required this.getCurrentUserUidUseCase,
-      required this.isSignInUseCase,
-      required this.signOutUseCase})
-      : super(AuthStatusInitial()) {
+  AuthStatusBloc({
+    required this.getCurrentUserUidUseCase,
+    required this.isSignInUseCase,
+    required this.signOutUseCase,
+  }) : super(AuthStatusInitial()) {
     on<AuthStatusStarted>(onAuthStatusStarted);
     on<AuthStatusLogedIn>(onAuthStatusLogedIn);
     on<AuthStatusLogedOut>(onAuthStatusLogedOut);
   }
-// watch bloc migration 8.0 implement new rules
+
   Future<void> onAuthStatusStarted(
-      AuthStatusStarted event, Emitter<AuthStatusState> emit) async {
+    AuthStatusStarted event,
+    Emitter<AuthStatusState> emit,
+  ) async {
     try {
       final bool isSignIn = await isSignInUseCase.call(NoParams());
       if (isSignIn) {
@@ -37,7 +40,9 @@ class AuthStatusBloc extends Bloc<AuthStatusEvent, AuthStatusState> {
   }
 
   Future<void> onAuthStatusLogedIn(
-      AuthStatusLogedIn event, Emitter<AuthStatusState> emit) async {
+    AuthStatusLogedIn event,
+    Emitter<AuthStatusState> emit,
+  ) async {
     try {
       final String uid = await getCurrentUserUidUseCase.call(NoParams());
       emit(Authenticated(uid: uid));
@@ -45,7 +50,9 @@ class AuthStatusBloc extends Bloc<AuthStatusEvent, AuthStatusState> {
   }
 
   Future<void> onAuthStatusLogedOut(
-      AuthStatusLogedOut event, Emitter<AuthStatusState> emit) async {
+    AuthStatusLogedOut event,
+    Emitter<AuthStatusState> emit,
+  ) async {
     try {
       await signOutUseCase.call(NoParams());
       emit(UnAuthenticated());

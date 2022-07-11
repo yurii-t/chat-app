@@ -1,17 +1,16 @@
+// ignore_for_file: always_put_control_body_on_new_line
+
 import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:chat_app/data/models/user_model.dart';
-import 'package:chat_app/domain/entities/user_entity.dart';
 import 'package:chat_app/presentation/bloc/current_user/bloc/current_user_bloc.dart';
-// import 'package:chat_app/presentation/bloc/user/bloc/user_bloc.dart';
 import 'package:chat_app/presentation/widgets/custom_appbar.dart';
 import 'package:chat_app/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:chat_app/core/dependency_injection.dart' as di;
 import 'package:image_picker/image_picker.dart';
 
 class MyProfilePage extends StatefulWidget {
@@ -60,16 +59,17 @@ class _MyProfilePageState extends State<MyProfilePage> {
     } on PlatformException catch (e) {
       print('Failed to pick image: $e');
     }
-    @override
-    void dispose() {
-      firstNameController.dispose();
-      lastNameController.dispose();
-      adressController.dispose();
-      genderController.dispose();
-      martialController.dispose();
-      languageController.dispose();
-      super.dispose();
-    }
+  }
+
+  @override
+  void dispose() {
+    firstNameController.dispose();
+    lastNameController.dispose();
+    adressController.dispose();
+    genderController.dispose();
+    martialController.dispose();
+    languageController.dispose();
+    super.dispose();
   }
 
   @override
@@ -108,9 +108,6 @@ class _MyProfilePageState extends State<MyProfilePage> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      // const SizedBox(
-                      //   height: 40,
-                      // ),
                       const Text(
                         'Save changes?',
                         style: TextStyle(
@@ -151,10 +148,10 @@ class _MyProfilePageState extends State<MyProfilePage> {
                           Expanded(
                             child: ElevatedButton(
                               onPressed: () {
-                                var pickedImage = File(image?.path ?? '');
+                                final pickedImage = File(image?.path ?? '');
                                 context.read<CurrentUserBloc>().add(CreateUser(
                                       '${firstNameController.text} ${lastNameController.text}',
-                                      pickedImage, //userImage,
+                                      pickedImage,
                                       adressController.text,
                                       genderController.text,
                                       martialController.text,
@@ -243,9 +240,7 @@ class _MyProfilePageState extends State<MyProfilePage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 GestureDetector(
-                                  onTap: () {
-                                    takePhoto();
-                                  },
+                                  onTap: takePhoto,
                                   child: Row(
                                     children: [
                                       SvgPicture.asset(
@@ -276,7 +271,8 @@ class _MyProfilePageState extends State<MyProfilePage> {
                                   child: Row(
                                     children: [
                                       SvgPicture.asset(
-                                          'assets/icons/library.svg'),
+                                        'assets/icons/library.svg',
+                                      ),
                                       const SizedBox(
                                         width: 10,
                                       ),
@@ -300,9 +296,11 @@ class _MyProfilePageState extends State<MyProfilePage> {
                     child: CircleAvatar(
                       radius: 45,
                       backgroundColor: AppColors.lightGrey,
-                      backgroundImage: NetworkImage(
-                          state.usersInfo.userImage), //Image.file(image!).image
-                      //Image.asset('assets/background.png').image,
+                      backgroundImage: state.usersInfo.userImage != ''
+                          ? NetworkImage(
+                              state.usersInfo.userImage,
+                            )
+                          : null,
                       child: SvgPicture.asset('assets/icons/camera.svg'),
                     ),
                   ),
@@ -315,9 +313,7 @@ class _MyProfilePageState extends State<MyProfilePage> {
                         child: TextField(
                           controller: firstNameController,
                           decoration: InputDecoration(
-                            hintText: state.usersInfo.userName
-                                .split(' ')
-                                .first, //[1];, //'First Name',
+                            hintText: state.usersInfo.userName.split(' ').first,
                             hintStyle: const TextStyle(color: AppColors.grey),
                           ),
                         ),

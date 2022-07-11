@@ -17,7 +17,7 @@ class DownloadFileUseCase implements UseCase<DownloadTask, DownloadFileParams> {
 
 class DownloadFileParams {
   final String url;
-  // final String path;
+
   File file;
 
   DownloadFileParams(this.url, this.file);

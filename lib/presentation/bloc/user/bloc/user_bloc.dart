@@ -1,3 +1,4 @@
+// ignore_for_file: avoid-unused-parameters
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';

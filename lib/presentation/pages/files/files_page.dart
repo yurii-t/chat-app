@@ -72,12 +72,10 @@ class _FilesPageState extends State<FilesPage> {
             ),
             Expanded(
               child: GroupedListView<MessageEntity, String>(
-                elements: filesItems, // _elements,
+                elements: filesItems,
                 groupBy: (element) => DateFormat('MMMM yyyy')
                     .format(element.time.toDate())
                     .toString(),
-                //       .format( filesList[element].time.toDate()).toString(),
-                //element['date'] as String,
                 groupComparator: (value1, value2) => value2.compareTo(value1),
                 itemComparator: (item1, item2) =>
                     item1.docName.compareTo(item2.docName),

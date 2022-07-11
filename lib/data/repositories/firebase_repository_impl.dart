@@ -1,6 +1,6 @@
 import 'package:chat_app/data/datasource/firebase/firebase_remote_datasource.dart';
-import 'package:chat_app/domain/entities/message_entity.dart';
 import 'package:chat_app/domain/entities/chat_entity.dart';
+import 'package:chat_app/domain/entities/message_entity.dart';
 import 'package:chat_app/domain/entities/user_entity.dart';
 import 'package:chat_app/domain/repositories/firebase_repository.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -20,22 +20,6 @@ class FirebaseRepositoryImpl implements FirebaseRepository {
     return firebaseRemoteDataSource.signInWithCredential(credential);
   }
 
-  // @override
-  // Future<void> verifyPhone({
-  //   required String phoneNumber,
-  //   required Function(PhoneAuthCredential p1) verificationCompleted,
-  //   required Function(FirebaseAuthException p1) verificationFailed,
-  //   required Function(String p1, int? p2) codeSent,
-  //   required Function(String p1) codeAutoRetrievalTimeout,
-  // }) async {
-  //   await firebaseRemoteDataSource.verifyPhone(
-  //     phoneNumber: phoneNumber,
-  //     verificationCompleted: verificationCompleted,
-  //     verificationFailed: verificationFailed,
-  //     codeSent: codeSent,
-  //     codeAutoRetrievalTimeout: codeAutoRetrievalTimeout,
-  //   );
-  // }
   @override
   Future<void> verifyPhone({
     required String phoneNumber,
@@ -79,7 +63,6 @@ class FirebaseRepositoryImpl implements FirebaseRepository {
 
   @override
   Future<void> sendMessage(MessageEntity messageEntity, String chatId) =>
-      // Future<String> sendMessage(MessageEntity messageEntity, String chatId) =>
       firebaseRemoteDataSource.sendMessage(messageEntity, chatId);
   @override
   Future<String> setMessageId(String chatId) =>
@@ -103,4 +86,8 @@ class FirebaseRepositoryImpl implements FirebaseRepository {
   @override
   Future<void> getNewMessages(String chatId, String recepientUid) =>
       firebaseRemoteDataSource.getNewMessages(chatId, recepientUid);
+
+  @override
+  Future<void> updateChattingWithId(String recepientUid) =>
+      firebaseRemoteDataSource.updateChattingWithId(recepientUid);
 }

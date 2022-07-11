@@ -37,7 +37,7 @@ class ChatInteractionsSendMessage extends ChatInteractionEvent {
         recipientName,
         recipientPhoneNumber,
         message,
-        messageType
+        messageType,
       ];
 }
 
@@ -111,4 +111,12 @@ class ChatInteractionsSeenMessages extends ChatInteractionEvent {
   const ChatInteractionsSeenMessages(this.senderId, this.recipientId);
   @override
   List<Object> get props => [senderId, recipientId];
+}
+
+class ChatInteractionsupdateChattingWithId extends ChatInteractionEvent {
+  final String recipientId;
+
+  const ChatInteractionsupdateChattingWithId(this.recipientId);
+  @override
+  List<Object> get props => [recipientId];
 }

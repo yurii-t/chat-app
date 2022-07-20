@@ -1,8 +1,10 @@
-// ignore_for_file: prefer-single-widget-per-file
+// ignore_for_file: prefer-single-widget-per-file, use_if_null_to_convert_nulls_to_bools
 
 import 'package:chat_app/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+
+import 'package:just_waveform/just_waveform.dart';
 
 class MessageBubble extends StatelessWidget {
   const MessageBubble({
@@ -18,6 +20,13 @@ class MessageBubble extends StatelessWidget {
     this.downloadString,
     this.uploadValue,
     this.uploadString,
+    this.url,
+    this.isPlaying,
+    this.audioWaveform,
+    this.audioWaveformDuration,
+    this.start,
+    this.audioProgress,
+    this.audioWaveWidget,
     Key? key,
   }) : super(key: key);
   final MessageBubbleType type;
@@ -32,6 +41,13 @@ class MessageBubble extends StatelessWidget {
   final String? downloadString;
   final num? uploadValue;
   final String? uploadString;
+  final String? url;
+  final bool? isPlaying;
+  final Waveform? audioWaveform;
+  final Duration? audioWaveformDuration;
+  final Duration? start;
+  final Duration? audioProgress;
+  final Widget? audioWaveWidget;
 
   @override
   Widget build(BuildContext context) {
@@ -42,14 +58,14 @@ class MessageBubble extends StatelessWidget {
         alignment: (type == MessageBubbleType.sendMessage ||
                     type == MessageBubbleType.sendImage ||
                     type == MessageBubbleType.sendDoc) ||
-                type == MessageBubbleType.sendDocError
+                type == MessageBubbleType.sendDocError ||
+                type == MessageBubbleType.sendAudio
             ? Alignment.centerRight
             : Alignment.centerLeft,
         child: !error
             ? buildMessageBubble(
                 maxBubbleWidth,
                 Colors.transparent,
-                // context,
               )
             : GestureDetector(
                 onTap: () {
@@ -120,7 +136,6 @@ class MessageBubble extends StatelessWidget {
                     buildMessageBubble(
                       maxBubbleWidth,
                       Colors.red,
-                      // context,
                     ),
                     const SizedBox(
                       height: 5,
@@ -137,7 +152,6 @@ class MessageBubble extends StatelessWidget {
   Widget buildMessageBubble(
     double maxWidth,
     Color errorBorder,
-    // BuildContext context,
   ) {
     switch (type) {
       case MessageBubbleType.sendMessage:
@@ -242,7 +256,160 @@ class MessageBubble extends StatelessWidget {
             uploadString: uploadString ?? '',
           );
         }
+      case MessageBubbleType.sendAudio:
+        {
+          return AudioContainer(
+            audioWaveWidget: audioWaveWidget ?? const SizedBox.shrink(),
+            audioProgress: audioProgress ?? Duration.zero,
+            audioWaveform: audioWaveform,
+            audioWaveformDuration: audioWaveformDuration,
+            start: start,
+            isPlaying: isPlaying,
+            url: url ?? '',
+            seen: seen,
+            docName: text ?? 'audio message',
+            docSize: docSize ?? '',
+            color: AppColors.green,
+            time: time,
+            textColor: AppColors.white,
+            subTextColor: AppColors.white,
+            border: BorderRadius.circular(16),
+            errorBorder: errorBorder,
+            uploadValue: 0,
+            uploadString: '',
+          );
+        }
+      case MessageBubbleType.receiveAudio:
+        {
+          return AudioContainer(
+            audioWaveWidget: audioWaveWidget ?? const SizedBox.shrink(),
+            audioProgress: audioProgress ?? Duration.zero,
+            audioWaveform: audioWaveform,
+            audioWaveformDuration: audioWaveformDuration,
+            start: start,
+            isPlaying: isPlaying,
+            url: url ?? '',
+            docName: text ?? 'audio message',
+            docSize: docSize ?? '',
+            color: AppColors.lightGrey,
+            time: time,
+            textColor: Colors.black,
+            subTextColor: AppColors.numberPhoneTextGrey,
+            border: const BorderRadius.only(
+              topLeft: Radius.circular(19),
+              topRight: Radius.circular(19),
+              bottomRight: Radius.circular(19),
+            ),
+            uploadValue: 0,
+            uploadString: '',
+          );
+        }
     }
+  }
+}
+
+class AudioContainer extends StatelessWidget {
+  const AudioContainer({
+    required this.color,
+    required this.time,
+    required this.textColor,
+    required this.subTextColor,
+    required this.border,
+    required this.docSize,
+    required this.docName,
+    required this.uploadValue,
+    required this.uploadString,
+    required this.url,
+    required this.audioProgress,
+    required this.audioWaveWidget,
+    this.seen,
+    this.errorBorder,
+    this.isPlaying,
+    this.audioWaveform,
+    this.audioWaveformDuration,
+    this.start,
+    Key? key,
+  }) : super(key: key);
+  final Color color;
+  final BorderRadius border;
+  final String time;
+  final Color textColor;
+  final Color subTextColor;
+  final Color? errorBorder;
+  final bool? seen;
+
+  final String docSize;
+  final String docName;
+  final num uploadValue;
+  final String uploadString;
+  final String url;
+  final bool? isPlaying;
+  final Waveform? audioWaveform;
+  final Duration? audioWaveformDuration;
+  final Duration? start;
+  final Duration audioProgress;
+  final Widget audioWaveWidget;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints:
+          BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.7),
+      margin: const EdgeInsets.symmetric(vertical: 5),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: border,
+        border: Border.all(color: errorBorder ?? Colors.transparent),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+        horizontalTitleGap: 3,
+        minVerticalPadding: 2,
+        leading: SizedBox(
+          height: double.infinity,
+          child: isPlaying != true
+              ? SvgPicture.asset('assets/icons/play_audio.svg')
+              : SvgPicture.asset('assets/icons/stop_audio.svg'),
+        ),
+        title: Container(
+          padding: const EdgeInsets.only(
+            top: 20,
+          ),
+          height: 50,
+          child: audioWaveWidget,
+        ),
+        subtitle: Row(
+          children: [
+            Expanded(
+              child: Text(
+                docSize,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Colors.transparent,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ),
+            Row(
+              children: [
+                Text(
+                  '$time',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: subTextColor,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+                if (seen == true)
+                  SvgPicture.asset('assets/icons/message_checks.svg')
+                else
+                  const Text(''),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -328,6 +495,7 @@ class DocContainerSend extends StatelessWidget {
                     fontWeight: FontWeight.w400,
                   ),
                 ),
+                // ignore: no-boolean-literal-compare
                 if (seen == true)
                   SvgPicture.asset('assets/icons/message_checks.svg')
                 else
@@ -413,6 +581,7 @@ class DocContainerSendError extends StatelessWidget {
                     fontWeight: FontWeight.w400,
                   ),
                 ),
+                // ignore: no-boolean-literal-compare
                 if (seen == true)
                   SvgPicture.asset('assets/icons/message_checks.svg')
                 else
@@ -661,4 +830,6 @@ enum MessageBubbleType {
   sendDoc,
   reciveDoc,
   sendDocError,
+  sendAudio,
+  receiveAudio,
 }

@@ -96,7 +96,7 @@ class FileInteractionBloc
               recipientUid: event.recipientId,
               messageType: event.messageType,
               message: imageUrl,
-              messageId: messageId, //'',
+              messageId: messageId,
               time: Timestamp.now(),
               docName: event.docName,
               docSize: event.docSize,
@@ -123,7 +123,7 @@ class FileInteractionBloc
 
       await emit.forEach(
         uploadProgressUsecase.call(task),
-        onData: (double progress) {
+        onData: (progress) {
           final state = this.state;
 
           final uploadProgressList = state is FileInteractionProgressUploading
@@ -137,19 +137,19 @@ class FileInteractionBloc
           if (uploadProgressIndex == -1) {
             uploadProgressList.add(UploadingProgress(
               event.docId,
-              progress,
+              progress as double,
             ));
           } else {
             uploadProgressList[uploadProgressIndex] = UploadingProgress(
               event.docId,
-              progress,
+              progress as double,
             );
           }
 
           return FileInteractionProgressUploading(uploadProgressList);
         },
       );
-    } on FirebaseException catch (e) {
+    } on FirebaseException catch (_) {
       final state = this.state;
 
       final errorList = state is FileInteractinonError
@@ -217,7 +217,7 @@ class FileInteractionBloc
 
         await emit.forEach(
           downloadProgressUseCase.call(downloadProgress),
-          onData: (double dowProgress) {
+          onData: (dowProgress) {
             final state = this.state;
 
             final progressList = state is FileInteractionProgressDownloading
@@ -230,12 +230,12 @@ class FileInteractionBloc
             if (progressIndex == -1) {
               progressList.add(DownloadingProgress(
                 event.messageId,
-                dowProgress,
+                dowProgress as double,
               ));
             } else {
               progressList[progressIndex] = DownloadingProgress(
                 event.messageId,
-                dowProgress,
+                dowProgress as double,
               );
             }
 

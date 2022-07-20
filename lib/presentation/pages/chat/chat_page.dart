@@ -1,12 +1,17 @@
 // ignore_for_file: always_put_control_body_on_new_line
 
+import 'dart:async';
 import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:chat_app/data/models/message_model.dart';
+import 'package:chat_app/presentation/bloc/audio_play/bloc/audio_play_bloc.dart';
+import 'package:chat_app/presentation/bloc/audio_record/bloc/audio_record_bloc.dart';
+import 'package:chat_app/presentation/bloc/audio_wave_loader/bloc/audio_wave_loader_bloc.dart';
 
 import 'package:chat_app/presentation/bloc/chat/bloc/chat_interaction_bloc.dart';
 import 'package:chat_app/presentation/bloc/file_interaction/bloc/file_interaction_bloc.dart';
+import 'package:chat_app/presentation/pages/chat/widgets/audio_waveform.dart';
 import 'package:chat_app/presentation/pages/chat/widgets/message_bubble.dart';
 import 'package:chat_app/presentation/widgets/custom_appbar.dart';
 import 'package:chat_app/routes/app_router.gr.dart';
@@ -21,6 +26,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:just_waveform/just_waveform.dart';
 import 'package:open_file/open_file.dart';
 
 class ChatPage extends StatefulWidget {
@@ -79,6 +85,7 @@ class _ChatPageState extends State<ChatPage> {
     super.initState();
 
     _textController.addListener(() {
+      // ignore: no-empty-block
       setState(() {});
     });
   }
@@ -131,9 +138,19 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
+  String _formatNumber(int number) {
+    String numberStr = number.toString();
+    if (number < 10) {
+      numberStr = '0$numberStr';
+    }
+
+    return numberStr;
+  }
+
   @override
   void dispose() {
     _textController
+      // ignore: no-empty-block
       ..removeListener(() {})
       ..dispose();
     scrollController.dispose();
@@ -318,6 +335,7 @@ class _ChatPageState extends State<ChatPage> {
                                                             pickedFile?.path ??
                                                                 '',
                                                           );
+                                                          // ignore: unnecessary_null_comparison
                                                           if (resendfile !=
                                                               null) {
                                                             context
@@ -511,6 +529,152 @@ class _ChatPageState extends State<ChatPage> {
                                     },
                                   ),
                                 );
+                              } else if (messagesData.messageType == 'audio') {
+                                const bool play = false;
+                                context.read<AudioWaveLoaderBloc>().add(
+                                      AudioWaveLoaderStart(
+                                        messagesData.messageId,
+                                        messagesData.docName,
+                                        messagesData.message,
+                                      ),
+                                    );
+
+                                return BlocBuilder<AudioWaveLoaderBloc,
+                                    AudioWaveLoaderState>(
+                                  builder: (context, waveState) {
+                                    Waveform? wave;
+
+                                    WaveSetter? waveSetter;
+
+                                    if (waveState is AudioWaveLoaderLoaded) {
+                                      final waveIndex = waveState.waveFormList
+                                          .indexWhere((waveSet) =>
+                                              waveSet.id ==
+                                              messagesData.messageId);
+
+                                      final waveAudio = waveIndex != -1
+                                          ? waveState.waveFormList[waveIndex]
+                                          : null;
+                                      waveSetter = waveAudio;
+                                    }
+
+                                    return GestureDetector(
+                                      onTap: () {
+                                        context
+                                            .read<AudioPlayBloc>()
+                                            .add(AudioPlayPauseToggled(
+                                              play: !play,
+                                              docName: messagesData.docName,
+                                              messageId: messagesData.messageId,
+                                            ));
+                                      },
+                                      child: BlocBuilder<AudioPlayBloc,
+                                          AudioPlayState>(
+                                        builder: (context, state) {
+                                          bool isPlaying = false;
+
+                                          Duration currentAudioPosition =
+                                              Duration.zero;
+
+                                          if (state is AudioPlayCurrentState) {
+                                            final auidoPositionIndex =
+                                                state.audioPosition.indexWhere(
+                                              (audioPosId) =>
+                                                  audioPosId.id ==
+                                                  messagesData.messageId,
+                                            );
+
+                                            final audioPosition =
+                                                auidoPositionIndex != -1
+                                                    ? state
+                                                        .audioPosition[
+                                                            auidoPositionIndex]
+                                                        .position
+                                                    : Duration.zero;
+                                            final fullAudioDuration =
+                                                auidoPositionIndex != -1
+                                                    ? state
+                                                        .audioPosition[
+                                                            auidoPositionIndex]
+                                                        .fullDuration
+                                                    : Duration.zero;
+
+                                            final audioisPlaying =
+                                                // ignore: avoid_bool_literals_in_conditional_expressions
+                                                auidoPositionIndex != -1
+                                                    ? state
+                                                        .audioPosition[
+                                                            auidoPositionIndex]
+                                                        .isPlaying
+                                                    : false;
+
+                                            currentAudioPosition =
+                                                audioPosition;
+
+                                            isPlaying = audioisPlaying;
+                                            if (currentAudioPosition ==
+                                                fullAudioDuration) {
+                                              isPlaying = false;
+                                            }
+                                          }
+
+                                          return MessageBubble(
+                                            audioWaveWidget: (waveSetter
+                                                    is WaveSetterLoaded)
+                                                ? AudioWaveform(
+                                                    waveform: waveSetter
+                                                            .waveform ??
+                                                        Waveform(
+                                                          version: 1,
+                                                          flags: 0,
+                                                          sampleRate: 0,
+                                                          samplesPerPixel: 0,
+                                                          length: 0,
+                                                          data: [
+                                                            0,
+                                                          ],
+                                                        ),
+                                                    start: Duration.zero,
+                                                    progress:
+                                                        currentAudioPosition,
+                                                    duration: waveSetter
+                                                            .waveform
+                                                            ?.duration ??
+                                                        Duration.zero,
+                                                  )
+                                                : const Center(
+                                                    child: SizedBox(
+                                                      width: 24,
+                                                      height: 24,
+                                                      child:
+                                                          CircularProgressIndicator(),
+                                                    ),
+                                                  ),
+                                            audioProgress: currentAudioPosition,
+                                            start: Duration.zero,
+                                            audioWaveform: wave,
+                                            audioWaveformDuration:
+                                                wave?.duration ?? Duration.zero,
+                                            isPlaying: isPlaying,
+                                            seen: messagesData.isRead,
+                                            error: uploadError,
+                                            uploadValue: updateProgress,
+                                            uploadString: updateProgressString,
+                                            docSize: '',
+                                            type: sender
+                                                ? MessageBubbleType.sendAudio
+                                                : MessageBubbleType
+                                                    .receiveAudio,
+                                            text: messagesData.docName,
+                                            time: DateFormat('hh:mm a').format(
+                                              messagesData.time.toDate(),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    );
+                                  },
+                                );
                               }
 
                               return MessageBubble(
@@ -617,6 +781,7 @@ class _ChatPageState extends State<ChatPage> {
                                           );
                                           final pkfile =
                                               File(pickedFile?.path ?? '');
+                                          // ignore: unnecessary_null_comparison
                                           if (pkfile != null) {
                                             context
                                                 .read<FileInteractionBloc>()
@@ -673,55 +838,143 @@ class _ChatPageState extends State<ChatPage> {
                         },
                         child: SvgPicture.asset('assets/icons/attach.svg'),
                       ),
-                      SizedBox(
-                        child: TextField(
-                          controller: _textController,
-                          minLines: 1,
-                          maxLines: null,
-                          textInputAction: TextInputAction.newline,
-                          textAlignVertical: TextAlignVertical.center,
-                          decoration: InputDecoration(
-                            contentPadding: const EdgeInsets.only(
-                              left: 15,
-                              right: 15,
-                              top: 8,
-                              bottom: 8,
-                            ),
-                            filled: true,
-                            fillColor: AppColors.lightGrey,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(40),
-                              borderSide: BorderSide.none,
-                            ),
-                            hintText: 'Message',
-                            constraints: BoxConstraints(
-                              minHeight: 35,
-                              maxWidth: MediaQuery.of(context).size.width * 0.7,
-                              minWidth: MediaQuery.of(context).size.width * 0.7,
-                            ),
-                            helperStyle: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w400,
-                              color: AppColors.lightGreytextFieldSearchHintText,
-                            ),
-                          ),
-                        ),
+                      BlocConsumer<AudioRecordBloc, AudioRecordState>(
+                        listener: (context, state) {
+                          if (state is AudioRecordStoped) {
+                            if (state.path != '') {
+                              final audioFile = File(state.path);
+                              final audioName = audioFile.path.split('/').last;
+                              context.read<FileInteractionBloc>().add(
+                                    FileInteractionUploadFile(
+                                      audioFile,
+                                      widget.senderUid,
+                                      widget.senderName,
+                                      widget.senderPhoneNumber,
+                                      widget.recipientUid,
+                                      widget.recipientName,
+                                      widget.recipientPhoneNumber,
+                                      '',
+                                      'audio',
+                                      'min:sec',
+                                      audioName,
+                                      '$audioFile/${Timestamp.now()}',
+                                    ),
+                                  );
+                            }
+                          }
+                        },
+                        builder: (context, state) {
+                          final voiceRecording = (state is AudioRecordOn &&
+                                  state.isRecording) ||
+                              (state is AudioRecordStoped && state.isRecording);
+
+                          String minutes = '00';
+                          String seconds = '00';
+                          if (state is AudioRecordOn) {
+                            minutes = _formatNumber(state.recordTime ~/ 60);
+                            seconds = _formatNumber(state.recordTime % 60);
+                          }
+
+                          return SizedBox(
+                            child: !voiceRecording
+                                ? TextField(
+                                    controller: _textController,
+                                    minLines: 1,
+                                    maxLines: null,
+                                    textInputAction: TextInputAction.newline,
+                                    textAlignVertical: TextAlignVertical.center,
+                                    decoration: InputDecoration(
+                                      contentPadding: const EdgeInsets.only(
+                                        left: 15,
+                                        right: 15,
+                                        top: 8,
+                                        bottom: 8,
+                                      ),
+                                      filled: true,
+                                      fillColor: AppColors.lightGrey,
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(40),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                      hintText: 'Message',
+                                      constraints: BoxConstraints(
+                                        minHeight: 35,
+                                        maxWidth:
+                                            MediaQuery.of(context).size.width *
+                                                0.7,
+                                        minWidth:
+                                            MediaQuery.of(context).size.width *
+                                                0.7,
+                                      ),
+                                      helperStyle: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w400,
+                                        color: AppColors
+                                            .lightGreytextFieldSearchHintText,
+                                      ),
+                                    ),
+                                  )
+                                : Row(
+                                    children: [
+                                      const CircleAvatar(
+                                        backgroundColor: Colors.red,
+                                        radius: 5,
+                                      ),
+                                      const SizedBox(width: 5),
+                                      Text('$minutes:$seconds'),
+                                      const SizedBox(width: 75),
+                                      SvgPicture.asset(
+                                        'assets/icons/chevron_left.svg',
+                                      ),
+                                      const SizedBox(width: 5),
+                                      const Text('Swipe to cancel'),
+                                    ],
+                                  ),
+                          );
+                        },
                       ),
                       GestureDetector(
+                        onLongPressStart: (_) {
+                          context
+                              .read<AudioRecordBloc>()
+                              .add(AudioRecordOnRecord());
+
+                          print('Long Press Start');
+                        },
+                        onLongPressEnd: (_) {
+                          context
+                              .read<AudioRecordBloc>()
+                              .add(AudioRecordOnStop());
+
+                          print('Long Press End');
+                        },
+                        onLongPressMoveUpdate: (details) {
+                          final Offset localPosition = details.localPosition;
+                          print('local $localPosition');
+                          if (localPosition.dx < -1.0) {
+                            context
+                                .read<AudioRecordBloc>()
+                                .add(AudioRecordOnCancel());
+
+                            print('Cancel');
+                          }
+                        },
                         onTap: () {
-                          context.read<ChatInteractionBloc>().add(
-                                ChatInteractionsSendMessage(
-                                  senderId: widget.senderUid,
-                                  senderName: widget.senderName,
-                                  senderPhoneNumber: widget.senderPhoneNumber,
-                                  recipientId: widget.recipientUid,
-                                  recipientName: widget.recipientName,
-                                  recipientPhoneNumber:
-                                      widget.recipientPhoneNumber,
-                                  message: _textController.text,
-                                  messageType: 'Text',
-                                ),
-                              );
+                          if (_textController.text.isNotEmpty) {
+                            context.read<ChatInteractionBloc>().add(
+                                  ChatInteractionsSendMessage(
+                                    senderId: widget.senderUid,
+                                    senderName: widget.senderName,
+                                    senderPhoneNumber: widget.senderPhoneNumber,
+                                    recipientId: widget.recipientUid,
+                                    recipientName: widget.recipientName,
+                                    recipientPhoneNumber:
+                                        widget.recipientPhoneNumber,
+                                    message: _textController.text,
+                                    messageType: 'Text',
+                                  ),
+                                );
+                          }
                           _textController.clear();
                         },
                         child: _textController.text.isNotEmpty

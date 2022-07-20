@@ -35,6 +35,9 @@ import 'package:chat_app/domain/usecases/update_chatting_with_id_usecase.dart';
 import 'package:chat_app/domain/usecases/upload_image_usecase.dart';
 import 'package:chat_app/domain/usecases/upload_progress_usecase.dart';
 import 'package:chat_app/domain/usecases/verify_phone_usecase.dart';
+import 'package:chat_app/presentation/bloc/audio_play/bloc/audio_play_bloc.dart';
+import 'package:chat_app/presentation/bloc/audio_record/bloc/audio_record_bloc.dart';
+import 'package:chat_app/presentation/bloc/audio_wave_loader/bloc/audio_wave_loader_bloc.dart';
 import 'package:chat_app/presentation/bloc/auth/bloc/phone_auth_bloc.dart';
 import 'package:chat_app/presentation/bloc/auth_status/bloc/auth_status_bloc.dart';
 import 'package:chat_app/presentation/bloc/chat/bloc/chat_interaction_bloc.dart';
@@ -110,6 +113,11 @@ Future<void> init() async {
         sl.call(),
         sl.call(),
       )..add(NotificationReceive()),
+    )
+    ..registerLazySingleton<AudioRecordBloc>(AudioRecordBloc.new)
+    ..registerLazySingleton<AudioPlayBloc>(AudioPlayBloc.new)
+    ..registerLazySingleton<AudioWaveLoaderBloc>(
+      () => AudioWaveLoaderBloc(sl.call()),
     )
     //UseCase
     ..registerLazySingleton<VerifyPhoneUseCase>(

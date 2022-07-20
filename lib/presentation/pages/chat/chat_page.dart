@@ -5,6 +5,7 @@ import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:chat_app/data/models/message_model.dart';
+import 'package:chat_app/domain/entities/message_entity.dart';
 import 'package:chat_app/presentation/bloc/audio_play/bloc/audio_play_bloc.dart';
 import 'package:chat_app/presentation/bloc/audio_record/bloc/audio_record_bloc.dart';
 import 'package:chat_app/presentation/bloc/audio_wave_loader/bloc/audio_wave_loader_bloc.dart';
@@ -25,6 +26,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:grouped_list/grouped_list.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:just_waveform/just_waveform.dart';
 import 'package:open_file/open_file.dart';
@@ -252,10 +254,50 @@ class _ChatPageState extends State<ChatPage> {
                               ),
                             ),
                           )
-                        : ListView.builder(
+                        // : ListView.builder(
+                        //     reverse: true,
+                        //     itemCount: messages.length,
+                        //     itemBuilder: (context, index) {
+                        : GroupedListView<MessageEntity, DateTime>(
                             reverse: true,
-                            itemCount: messages.length,
-                            itemBuilder: (context, index) {
+                            elements: messages,
+                            groupBy: (element) => DateTime(
+                              element.time.toDate().year,
+                              element.time.toDate().month,
+                              element.time.toDate().day,
+                            ),
+                            groupComparator: (value1, value2) =>
+                                value2.compareTo(value1),
+                            itemComparator: (item1, item2) =>
+                                item1.docName.compareTo(item2.docName),
+                            order: GroupedListOrder.ASC,
+                            useStickyGroupSeparators: false,
+                            groupSeparatorBuilder: (value) => Center(
+                              child: Container(
+                                alignment: Alignment.center,
+                                height: 30,
+                                width: 87,
+                                margin: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: AppColors.lightGrey,
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Text(
+                                  DateFormat('yyyy-MM-dd').format(value) ==
+                                          DateFormat('yyyy-MM-dd')
+                                              .format(DateTime.now())
+                                      ? 'Today'
+                                      : DateFormat('MMM d').format(value),
+                                  textAlign: TextAlign.start,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w400,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            indexedItemBuilder: (context, element, index) {
                               final messageRevers = messages.reversed.toList();
                               print(messageRevers.last);
                               final messagesData = messageRevers[index];

@@ -29,7 +29,7 @@ class ActiveChatsBloc extends Bloc<ActiveChatsEvent, ActiveChatsState> {
   ) async {
     await emit.forEach(
       getActiveChatsUseCase.call(NoParamsStream()),
-      onData: (List<ChatEntity> chats) => ActiveChatsLoaded(chats: chats),
+      onData: (chats) => ActiveChatsLoaded(chats: chats as List<ChatEntity>),
     );
   }
 

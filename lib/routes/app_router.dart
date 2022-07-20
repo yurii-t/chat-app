@@ -19,7 +19,6 @@ import 'package:chat_app/presentation/pages/status/status_page.dart';
   replaceInRouteName: 'Page,Route',
   routes: <AutoRoute>[
     AutoRoute<void>(
-      // guards: [CheckAuthStatus],
       page: EnterPhonePage,
       initial: true,
     ),
@@ -28,9 +27,6 @@ import 'package:chat_app/presentation/pages/status/status_page.dart';
     AutoRoute<void>(page: ProfilePage),
     AutoRoute<void>(page: CameraPage),
     AutoRoute<void>(page: MyProfilePage),
-    // AutoRoute<void>(page: FilesPage),
-    // AutoRoute<void>(page: MediaPage),
-
     AutoRoute<void>(
       page: FilesNavigationPage,
       children: [
@@ -55,9 +51,6 @@ import 'package:chat_app/presentation/pages/status/status_page.dart';
         AutoRoute<void>(page: SettingPage),
       ],
     ),
-
-    // AutoRoute<void>(page: FilterScreen),
-    // AutoRoute<void>(page: SearchScreen),
   ],
 )
 class $AppRouter {}

@@ -1,4 +1,7 @@
 import 'package:chat_app/core/dependency_injection.dart' as di;
+import 'package:chat_app/presentation/bloc/audio_play/bloc/audio_play_bloc.dart';
+import 'package:chat_app/presentation/bloc/audio_record/bloc/audio_record_bloc.dart';
+import 'package:chat_app/presentation/bloc/audio_wave_loader/bloc/audio_wave_loader_bloc.dart';
 import 'package:chat_app/presentation/bloc/auth/bloc/phone_auth_bloc.dart';
 import 'package:chat_app/presentation/bloc/auth_status/bloc/auth_status_bloc.dart';
 import 'package:chat_app/presentation/bloc/chat/bloc/chat_interaction_bloc.dart';
@@ -15,6 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
+// ignore: long-method
 Future<void> main() async {
   const InitializationSettings initializationSettings =
       const InitializationSettings(
@@ -56,12 +60,22 @@ Future<void> main() async {
         BlocProvider(
           create: (context) => di.sl<NotificationBloc>(),
         ),
+        BlocProvider(
+          create: (context) => di.sl<AudioRecordBloc>(),
+        ),
+        BlocProvider(
+          create: (context) => di.sl<AudioPlayBloc>(),
+        ),
+        BlocProvider(
+          create: (context) => di.sl<AudioWaveLoaderBloc>(),
+        ),
       ],
       child: MyApp(),
     ),
   );
 }
 
+//ignore: prefer-match-file-name
 class MyApp extends StatelessWidget {
   MyApp({Key? key}) : super(key: key);
 

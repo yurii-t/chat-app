@@ -294,7 +294,6 @@ class FirebaseRemoteDataSourceImpl implements FirebaseRemoteDataSource {
     final messageDoc = await otherChatDetailsCollectionRef.get();
 
     if (messageDoc.exists) {
-      // await messageDoc.reference.update({'newMessages': length});
       await otherChatDetailsCollectionRef.update({'newMessages': size});
     } else {
       return;

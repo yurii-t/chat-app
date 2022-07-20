@@ -136,35 +136,3 @@ class _EnterPinPageState extends State<EnterPinPage> {
         ));
   }
 }
-
-// class _SomeScreen extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     final userId = context.select<AuthStatusBloc, String?>(
-//       (bloc) {
-//         final state = bloc.state;
-
-//         return state is Authenticated ? state.uid : null;
-//       },
-//     );
-
-//     final currentUserInfo = context.select<UserBloc, UserEntity?>(
-//       (bloc) {
-//         final state = bloc.state;
-//         if (state is UserLoaded) {
-//           final currentUseInfo = state.allUsers.firstWhere(
-//             (user) => user.userId == userId,
-//           );
-
-//           return currentUseInfo;
-//         }
-
-//         return null;
-//       },
-//     );
-
-//     return currentUserInfo != null
-//         ? const Scaffold()
-//         : const Text('not logged in');
-//   }
-// }

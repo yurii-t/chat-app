@@ -29,11 +29,12 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     return super.close();
   }
 
-  void onLoadAllUsers(LoadAllUsers event, Emitter<UserState> emit) async {
+  Future<void> onLoadAllUsers(
+      LoadAllUsers event, Emitter<UserState> emit) async {
     await emit.forEach(
       getAllUsersUseCase.call(NoParamsStream()),
-      onData: (List<UserEntity> users) {
-        return UserLoaded(allUsers: users);
+      onData: (users) {
+        return UserLoaded(allUsers: users as List<UserEntity>);
       },
     );
   }
